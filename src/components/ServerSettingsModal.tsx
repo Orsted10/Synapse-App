@@ -14,7 +14,7 @@ interface ServerSettingsModalProps {
 
 export function ServerSettingsModal({ isOpen, onClose, workspaceId }: ServerSettingsModalProps) {
   const [activeTab, setActiveTab] = useState("overview");
-  const { workspaces, fetchWorkspaces, serverRoles, setServerRoles, updateRole, serverMembers, setMemberRole } = useWorkspaceStore();
+  const { workspaces, fetchWorkspaces, serverRoles, setServerRoles, updateRole, serverMembers, toggleMemberRole } = useWorkspaceStore();
   const workspace = workspaces.find(w => w.id === workspaceId);
   
   const [serverName, setServerName] = useState(workspace?.name || "");

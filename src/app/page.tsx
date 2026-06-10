@@ -308,7 +308,7 @@ export default function Home() {
         position={{ x: contextMenu.x, y: contextMenu.y }}
         onEdit={() => handleStartEdit(contextMenu.msg)}
         onDelete={(e) => handleDeleteClick(contextMenu.msg, e)}
-        canEditDelete={user && contextMenu.msg?.user_id === user?.id}
+        canEditDelete={Boolean(user && contextMenu.msg?.user_id === user?.id)}
       />
     </>
   );
