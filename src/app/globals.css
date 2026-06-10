@@ -1,26 +1,302 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@theme {
+  --color-synapse-bg: rgba(var(--bg-primary), 1);
+  --color-synapse-text: rgba(var(--text-primary), 1);
+  --color-synapse-secondary: rgba(var(--bg-secondary), 1);
+  --color-synapse-tertiary: rgba(var(--bg-tertiary), 1);
+  --color-synapse-muted: rgba(var(--text-secondary), 1);
+  --color-synapse-accent: rgba(var(--accent), 1);
+  --color-synapse-accent-hover: rgba(var(--accent-hover), 1);
+  --color-synapse-border: rgba(var(--border-subtle));
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
-}
+@layer base {
+  :root, [data-theme="synapse-dark"] {
+    /* Default sleek Synapse Dark */
+    --bg-primary: 10, 10, 10;
+    --bg-secondary: 20, 20, 20;
+    --bg-tertiary: 30, 30, 30;
+    --text-primary: 250, 250, 250;
+    --text-secondary: 160, 160, 160;
+    --accent: 124, 58, 237; /* Purple */
+    --accent-hover: 139, 92, 246;
+    --border-subtle: 255, 255, 255, 0.1;
+    --glass-panel: 255, 255, 255, 0.03;
+  }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  [data-theme="midnight"] {
+    --bg-primary: 5, 10, 20;
+    --bg-secondary: 10, 20, 35;
+    --bg-tertiary: 15, 30, 50;
+    --text-primary: 240, 248, 255;
+    --text-secondary: 150, 180, 210;
+    --accent: 56, 189, 248; /* Sky blue */
+    --accent-hover: 14, 165, 233;
+    --border-subtle: 255, 255, 255, 0.08;
+    --glass-panel: 255, 255, 255, 0.05;
+  }
+
+  [data-theme="graphite"] {
+    --bg-primary: 28, 28, 30;
+    --bg-secondary: 40, 40, 42;
+    --bg-tertiary: 50, 50, 55;
+    --text-primary: 240, 240, 242;
+    --text-secondary: 170, 170, 175;
+    --accent: 100, 210, 255; /* Soft cyan */
+    --accent-hover: 120, 220, 255;
+    --border-subtle: 255, 255, 255, 0.1;
+    --glass-panel: 255, 255, 255, 0.04;
+  }
+
+  [data-theme="discord-classic"] {
+    --bg-primary: 49, 51, 56;
+    --bg-secondary: 43, 45, 49;
+    --bg-tertiary: 30, 31, 34;
+    --text-primary: 219, 222, 225;
+    --text-secondary: 148, 155, 164;
+    --accent: 88, 101, 242;
+    --accent-hover: 71, 82, 196;
+    --border-subtle: 0, 0, 0, 0.2;
+    --glass-panel: 0, 0, 0, 0.1;
+  }
+
+  [data-theme="telegram-light"] {
+    --bg-primary: 255, 255, 255;
+    --bg-secondary: 240, 242, 245;
+    --bg-tertiary: 230, 235, 240;
+    --text-primary: 15, 20, 25;
+    --text-secondary: 110, 120, 130;
+    --accent: 51, 144, 236;
+    --accent-hover: 43, 124, 201;
+    --border-subtle: 0, 0, 0, 0.08;
+    --glass-panel: 255, 255, 255, 0.5;
+  }
+
+  [data-theme="arctic"] {
+    --bg-primary: 248, 250, 252;
+    --bg-secondary: 241, 245, 249;
+    --bg-tertiary: 226, 232, 240;
+    --text-primary: 15, 23, 42;
+    --text-secondary: 100, 116, 139;
+    --accent: 14, 165, 233;
+    --accent-hover: 2, 132, 199;
+    --border-subtle: 0, 0, 0, 0.05;
+    --glass-panel: 255, 255, 255, 0.7;
+  }
+
+  [data-theme="oled"] {
+    --bg-primary: 0, 0, 0;
+    --bg-secondary: 8, 8, 8;
+    --bg-tertiary: 15, 15, 15;
+    --text-primary: 255, 255, 255;
+    --text-secondary: 150, 150, 150;
+    --accent: 255, 255, 255;
+    --accent-hover: 200, 200, 200;
+    --border-subtle: 255, 255, 255, 0.15;
+    --glass-panel: 255, 255, 255, 0.05;
+  }
+
+  [data-theme="matrix"] {
+    --bg-primary: 5, 15, 5;
+    --bg-secondary: 10, 25, 10;
+    --bg-tertiary: 15, 35, 15;
+    --text-primary: 50, 255, 50;
+    --text-secondary: 30, 150, 30;
+    --accent: 50, 255, 50;
+    --accent-hover: 100, 255, 100;
+    --border-subtle: 50, 255, 50, 0.2;
+    --glass-panel: 50, 255, 50, 0.05;
+  }
+
+  [data-theme="synthwave"] {
+    --bg-primary: 36, 17, 54;
+    --bg-secondary: 50, 20, 80;
+    --bg-tertiary: 70, 30, 110;
+    --text-primary: 255, 200, 255;
+    --text-secondary: 200, 100, 200;
+    --accent: 255, 0, 150;
+    --accent-hover: 255, 50, 180;
+    --border-subtle: 255, 0, 150, 0.3;
+    --glass-panel: 255, 255, 255, 0.05;
+  }
+
+  [data-theme="forest"] {
+    --bg-primary: 15, 25, 15;
+    --bg-secondary: 25, 40, 25;
+    --bg-tertiary: 35, 55, 35;
+    --text-primary: 220, 240, 220;
+    --text-secondary: 150, 180, 150;
+    --accent: 134, 239, 172;
+    --accent-hover: 74, 222, 128;
+    --border-subtle: 255, 255, 255, 0.1;
+    --glass-panel: 255, 255, 255, 0.03;
+  }
+
+  [data-theme="ocean"] {
+    --bg-primary: 10, 25, 35;
+    --bg-secondary: 20, 45, 60;
+    --bg-tertiary: 30, 65, 85;
+    --text-primary: 220, 240, 255;
+    --text-secondary: 150, 180, 200;
+    --accent: 94, 234, 212;
+    --accent-hover: 45, 212, 191;
+    --border-subtle: 255, 255, 255, 0.1;
+    --glass-panel: 255, 255, 255, 0.05;
+  }
+
+  [data-theme="sunset"] {
+    --bg-primary: 35, 15, 15;
+    --bg-secondary: 50, 20, 20;
+    --bg-tertiary: 70, 25, 25;
+    --text-primary: 255, 220, 200;
+    --text-secondary: 200, 150, 130;
+    --accent: 251, 146, 60;
+    --accent-hover: 249, 115, 22;
+    --border-subtle: 255, 255, 255, 0.1;
+    --glass-panel: 255, 255, 255, 0.03;
+  }
+
+  [data-theme="monochrome"] {
+    --bg-primary: 255, 255, 255;
+    --bg-secondary: 245, 245, 245;
+    --bg-tertiary: 235, 235, 235;
+    --text-primary: 0, 0, 0;
+    --text-secondary: 100, 100, 100;
+    --accent: 0, 0, 0;
+    --accent-hover: 50, 50, 50;
+    --border-subtle: 0, 0, 0, 0.1;
+    --glass-panel: 255, 255, 255, 0.5;
+  }
+
+  [data-theme="dracula"] {
+    --bg-primary: 40, 42, 54;
+    --bg-secondary: 68, 71, 90;
+    --bg-tertiary: 98, 114, 164;
+    --text-primary: 248, 248, 242;
+    --text-secondary: 139, 233, 253;
+    --accent: 255, 121, 198;
+    --accent-hover: 189, 147, 249;
+    --border-subtle: 255, 255, 255, 0.1;
+    --glass-panel: 255, 255, 255, 0.05;
+  }
+
+  [data-theme="nord"] {
+    --bg-primary: 46, 52, 64;
+    --bg-secondary: 59, 66, 82;
+    --bg-tertiary: 67, 76, 94;
+    --text-primary: 236, 239, 244;
+    --text-secondary: 216, 222, 233;
+    --accent: 136, 192, 208;
+    --accent-hover: 129, 161, 193;
+    --border-subtle: 255, 255, 255, 0.1;
+    --glass-panel: 255, 255, 255, 0.05;
+  }
+
+  [data-theme="solarized-dark"] {
+    --bg-primary: 0, 43, 54;
+    --bg-secondary: 7, 54, 66;
+    --bg-tertiary: 88, 110, 117;
+    --text-primary: 131, 148, 150;
+    --text-secondary: 147, 161, 161;
+    --accent: 181, 137, 0;
+    --accent-hover: 203, 75, 22;
+    --border-subtle: 255, 255, 255, 0.1;
+    --glass-panel: 255, 255, 255, 0.03;
+  }
+
+  [data-theme="solarized-light"] {
+    --bg-primary: 253, 246, 227;
+    --bg-secondary: 238, 232, 213;
+    --bg-tertiary: 200, 195, 175;
+    --text-primary: 101, 123, 131;
+    --text-secondary: 88, 110, 117;
+    --accent: 42, 161, 152;
+    --accent-hover: 38, 139, 210;
+    --border-subtle: 0, 0, 0, 0.1;
+    --glass-panel: 255, 255, 255, 0.5;
+  }
+
+  [data-theme="cyberpunk"] {
+    --bg-primary: 250, 230, 45; /* Yellow */
+    --bg-secondary: 0, 0, 0;
+    --bg-tertiary: 30, 30, 30;
+    --text-primary: 0, 0, 0;
+    --text-secondary: 50, 50, 50;
+    --accent: 255, 0, 60; /* Red/pink */
+    --accent-hover: 0, 255, 255; /* Cyan */
+    --border-subtle: 0, 0, 0, 0.2;
+    --glass-panel: 255, 255, 255, 0.2;
+  }
+
+  [data-theme="coffee"] {
+    --bg-primary: 44, 30, 22;
+    --bg-secondary: 62, 45, 34;
+    --bg-tertiary: 82, 60, 45;
+    --text-primary: 245, 235, 225;
+    --text-secondary: 200, 180, 160;
+    --accent: 210, 180, 140; /* Tan */
+    --accent-hover: 230, 200, 160;
+    --border-subtle: 255, 255, 255, 0.1;
+    --glass-panel: 255, 255, 255, 0.05;
+  }
+
+  [data-theme="rose-gold"] {
+    --bg-primary: 250, 245, 245;
+    --bg-secondary: 240, 230, 230;
+    --bg-tertiary: 230, 215, 215;
+    --text-primary: 60, 50, 50;
+    --text-secondary: 100, 80, 80;
+    --accent: 183, 110, 121; /* Rose gold */
+    --accent-hover: 200, 130, 140;
+    --border-subtle: 0, 0, 0, 0.05;
+    --glass-panel: 255, 255, 255, 0.6;
+  }
+
+  [data-theme="discord-light"] {
+    --bg-primary: 255, 255, 255;
+    --bg-secondary: 242, 243, 245;
+    --bg-tertiary: 227, 229, 232;
+    --text-primary: 49, 51, 56;
+    --text-secondary: 92, 94, 102;
+    --accent: 88, 101, 242;
+    --accent-hover: 71, 82, 196;
+    --border-subtle: 0, 0, 0, 0.1;
+    --glass-panel: 255, 255, 255, 0.8;
+  }
+
+  body {
+    background-color: rgba(var(--bg-primary), 1);
+    color: rgba(var(--text-primary), 1);
+    transition: background-color 0.3s ease, color 0.3s ease;
   }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+/* Glassmorphism Utilities */
+.glass-panel {
+  background: rgba(var(--glass-panel));
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid rgba(var(--border-subtle));
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.1);
+}
+
+.premium-shadow {
+  box-shadow: 0 10px 40px -10px rgba(0,0,0,0.3);
+}
+
+/* Scrollbar sleek styling */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(var(--text-secondary), 0.2);
+  border-radius: 10px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(var(--text-secondary), 0.4);
 }
