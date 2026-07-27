@@ -24,9 +24,10 @@ export const usePresenceStore = create<PresenceState>((set, get) => ({
         const state = presenceChannel.presenceState();
         const activeUsers: Record<string, any> = {};
         
-        for (const [key, presences] of Object.entries(state)) {
+        for (const [key, presencesRaw] of Object.entries(state)) {
+          const presences = presencesRaw as any[];
           if (presences.length > 0) {
-            const presence = presences[0] as any;
+            const presence = presences[0];
             activeUsers[presence.userId] = presence;
           }
         }

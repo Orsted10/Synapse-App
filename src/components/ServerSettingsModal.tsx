@@ -239,21 +239,24 @@ export function ServerSettingsModal({ isOpen, onClose, workspaceId }: ServerSett
                       </div>
                       
                       <div className="bg-tertiary rounded-lg border border-subtle overflow-hidden flex flex-col">
-                        {roles.map(role => (
-                          <div 
-                            key={role.id} 
-                            onClick={() => setEditingRole(role)}
-                            className="flex items-center justify-between p-3 border-b border-subtle hover:bg-secondary cursor-pointer transition-colors group"
-                          >
-                            <div className="flex items-center gap-3">
-                              <div className="w-3 h-3 rounded-full" style={{ backgroundColor: role.color }} />
-                              <span className="font-medium text-foreground group-hover:underline">{role.name}</span>
+                        {roles.map(role => {
+                          const memberCount = (serverMembers[workspaceId] || []).filter(m => (m.roleIds || []).includes(role.id)).length;
+                          return (
+                            <div 
+                              key={role.id} 
+                              onClick={() => setEditingRole(role)}
+                              className="flex items-center justify-between p-3 border-b border-subtle hover:bg-secondary cursor-pointer transition-colors group"
+                            >
+                              <div className="flex items-center gap-3">
+                                <div className="w-3 h-3 rounded-full" style={{ backgroundColor: role.color }} />
+                                <span className="font-medium text-foreground group-hover:underline">{role.name}</span>
+                              </div>
+                              <span className="text-xs text-muted font-medium bg-secondary group-hover:bg-tertiary px-2 py-1 rounded transition-colors">
+                                {memberCount} Members
+                              </span>
                             </div>
-                            <span className="text-xs text-muted font-medium bg-secondary group-hover:bg-tertiary px-2 py-1 rounded transition-colors">
-                              {role.members} Members
-                            </span>
-                          </div>
-                        ))}
+                          );
+                        })}
                       </div>
                     </>
                   ) : (
