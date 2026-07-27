@@ -218,7 +218,7 @@ export default function Home() {
         <div className="flex items-center gap-3">
           <Hash size={22} className="text-muted" />
           <div className="flex items-center gap-3">
-            <span className="font-bold text-[16px]">{activeChannel ? activeChannel.name : 'Select a channel'}</span>
+            <span className="font-bold text-[18px] tracking-wide text-gradient-animated">{activeChannel ? activeChannel.name : 'Select a channel'}</span>
           </div>
         </div>
         {activeChannel && (

@@ -15,6 +15,9 @@ import { Tooltip } from "./Tooltip";
 import { useRouter } from "next/navigation";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
+import { CustomCursor } from "./CustomCursor";
+import { TiltCard } from "./TiltCard";
+
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, profile, isLoading: isAuthLoading, initializeAuth } = useUserStore();
@@ -58,14 +61,15 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="h-screen w-screen bg-mesh text-foreground overflow-hidden flex transition-colors duration-500 relative">
+      <div className="h-screen w-screen bg-aurora text-foreground overflow-hidden flex transition-colors duration-500 relative">
+        <CustomCursor />
         <Toaster theme="system" position="bottom-right" richColors />
         
         {/* Workspace Sidebar (Far Left) */}
       <div className="w-[72px] h-full glass-panel-heavy border-r border-subtle/50 flex flex-col items-center py-4 gap-3 z-20 shrink-0">
         {/* Home Button */}
         <Tooltip content="Direct Messages" side="right">
-          <button
+          <TiltCard
             onClick={() => setActiveWorkspace(null)}
             className={`w-12 h-12 flex items-center justify-center transition-all duration-300 group relative ${
               !activeWorkspaceId 
@@ -73,23 +77,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 : "bg-secondary/50 text-foreground hover:bg-accent hover:text-white hover:rounded-[12px] rounded-[16px] glowing-border"
             }`}
           >
-            <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M12 2L2 12l2.9 2.9L12 7.8l7.1 7.1L22 12 12 2z" />
-              <path d="M4 14v7a1 1 0 001 1h14a1 1 0 001-1v-7" />
-            </svg>
+            <div className="w-full h-full flex items-center justify-center">
+              <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M12 2L2 12l2.9 2.9L12 7.8l7.1 7.1L22 12 12 2z" />
+                <path d="M4 14v7a1 1 0 001 1h14a1 1 0 001-1v-7" />
+              </svg>
+            </div>
             {/* Active Pill Indicator */}
             {!activeWorkspaceId && (
-              <div className="absolute -left-3 w-2 h-10 bg-accent rounded-r-full shadow-[0_0_10px_rgba(var(--accent),0.8)]" />
+              <div className="absolute -left-3 top-1 w-2 h-10 bg-accent rounded-r-full shadow-[0_0_10px_rgba(var(--accent),0.8)]" />
             )}
-            <div className={`absolute -left-3 w-2 h-5 bg-foreground/50 rounded-r-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${!activeWorkspaceId ? 'hidden' : ''}`} />
-          </button>
+            <div className={`absolute -left-3 top-3.5 w-2 h-5 bg-foreground/50 rounded-r-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${!activeWorkspaceId ? 'hidden' : ''}`} />
+          </TiltCard>
         </Tooltip>
 
         <div className="w-8 h-[2px] bg-subtle/50 rounded-full mx-auto" />
 
         {workspaces.map((ws) => (
           <Tooltip key={ws.id} content={ws.name} side="right">
-            <button
+            <TiltCard
               onClick={() => setActiveWorkspace(ws.id)}
               className={`w-12 h-12 flex items-center justify-center font-bold text-sm transition-all duration-300 premium-shadow group relative ${
                 activeWorkspaceId === ws.id 
@@ -97,18 +103,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   : "bg-secondary/50 text-foreground hover:bg-accent hover:text-white hover:rounded-[12px] rounded-[16px] glowing-border"
               }`}
             >
-              {ws.icon_url ? (
-                <img src={ws.icon_url} alt={ws.name} className="w-full h-full object-cover rounded-inherit" />
-              ) : (
-                ws.name.substring(0, 2).toUpperCase()
-              )}
+              <div className="w-full h-full flex items-center justify-center overflow-hidden rounded-[inherit]">
+                {ws.icon_url ? (
+                  <img src={ws.icon_url} alt={ws.name} className="w-full h-full object-cover" />
+                ) : (
+                  ws.name.substring(0, 2).toUpperCase()
+                )}
+              </div>
               
               {/* Active Pill Indicator */}
               {activeWorkspaceId === ws.id && (
-                <div className="absolute -left-3 w-2 h-10 bg-accent rounded-r-full shadow-[0_0_10px_rgba(var(--accent),0.8)]" />
+                <div className="absolute -left-3 top-1 w-2 h-10 bg-accent rounded-r-full shadow-[0_0_10px_rgba(var(--accent),0.8)]" />
               )}
-              <div className={`absolute -left-3 w-2 h-5 bg-foreground/50 rounded-r-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${activeWorkspaceId === ws.id ? 'hidden' : ''}`} />
-            </button>
+              <div className={`absolute -left-3 top-3.5 w-2 h-5 bg-foreground/50 rounded-r-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${activeWorkspaceId === ws.id ? 'hidden' : ''}`} />
+            </TiltCard>
           </Tooltip>
         ))}
         
