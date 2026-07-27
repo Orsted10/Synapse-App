@@ -11,6 +11,7 @@ import { usePresenceStore } from "@/store/presenceStore";
 import { UserProfileModal } from "@/components/UserProfileModal";
 import { DeleteMessageModal } from "@/components/DeleteMessageModal";
 import { MessageContextMenu } from "@/components/MessageContextMenu";
+import { TiltCard } from "@/components/TiltCard";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from "@/lib/supabase";
@@ -22,6 +23,7 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [inputValue, setInputValue] = useState("");
+  const [isInputFocused, setIsInputFocused] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
   const [editContent, setEditContent] = useState("");
@@ -254,24 +256,32 @@ export default function Home() {
           <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar flex flex-col gap-6">
             {messages.map((msg, index) => (
               <motion.div 
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.2 }}
+                layout
+                initial={{ opacity: 0, y: 50, scale: 0.95 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                transition={{ 
+                  duration: 0.4, 
+                  delay: Math.min(index * 0.05, 1),
+                  type: "spring",
+                  damping: 20,
+                  stiffness: 200
+                }}
                 key={msg.id} 
                 onContextMenu={(e) => handleContextMenu(e, msg)}
-                className={`flex gap-4 group relative hover:bg-white/5 hover:backdrop-blur-md -mx-4 px-4 py-2 rounded-2xl transition-all duration-300 ${contextMenu.isOpen && contextMenu.msg?.id === msg.id ? 'bg-white/5 backdrop-blur-md shadow-lg' : ''}`}
+                className={`group relative hover:bg-white/5 hover:backdrop-blur-md -mx-4 rounded-2xl transition-all duration-300 ${contextMenu.isOpen && contextMenu.msg?.id === msg.id ? 'bg-white/5 backdrop-blur-md shadow-lg' : ''}`}
               >
-                {/* Avatar */}
-                <div 
-                  onClick={() => handleUserClick(msg.user)}
-                  className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-bold text-white shadow-sm cursor-pointer hover:opacity-80 transition-opacity mt-1 ${
-                    msg.user?.role === 'Creator' ? 'bg-accent' : 'bg-tertiary text-foreground'
-                  }`}
-                >
-                  {msg.user?.username ? msg.user.username.substring(0, 1).toUpperCase() : '?'}
-                </div>
+                <TiltCard className="w-full h-full flex gap-4 px-4 py-2">
+                  {/* Avatar */}
+                  <div 
+                    onClick={() => handleUserClick(msg.user)}
+                    className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-bold text-white shadow-sm cursor-pointer hover:opacity-80 transition-opacity mt-1 ${
+                      msg.user?.role === 'Creator' ? 'bg-accent' : 'bg-tertiary text-foreground'
+                    }`}
+                  >
+                    {msg.user?.username ? msg.user.username.substring(0, 1).toUpperCase() : '?'}
+                  </div>
 
-                <div className="flex flex-col w-full max-w-[85%]">
+                  <div className="flex flex-col w-full max-w-[85%]">
                   {/* Message Header */}
                   <div className="flex items-center gap-2 mb-1">
                     <span 
@@ -376,6 +386,7 @@ export default function Home() {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                   </button>
                 </div>
+                </TiltCard>
               </motion.div>
             ))}
             {messages.length === 0 && activeChannelId && (
@@ -407,7 +418,15 @@ export default function Home() {
                 className="hidden" 
                 accept="image/*"
               />
-              <div className="flex items-center glass-panel-heavy rounded-full px-6 py-4 shadow-xl group-hover:shadow-[0_10px_40px_-10px_rgba(var(--accent),0.3)] transition-all duration-500">
+              <motion.div 
+                animate={{
+                  y: isInputFocused ? -10 : 0,
+                  scale: isInputFocused ? 1.02 : 1,
+                  boxShadow: isInputFocused ? "0 25px 50px -12px rgba(var(--accent), 0.5)" : "0 10px 40px -10px rgba(0,0,0,0.3)"
+                }}
+                transition={{ type: "spring", stiffness: 300, damping: 25 }}
+                className={`flex items-center glass-panel-heavy rounded-[32px] px-6 py-4 transition-colors duration-500 ${isInputFocused ? 'border-accent/50' : 'border-white/10'}`}
+              >
                 <button 
                   type="button" 
                   onClick={() => fileInputRef.current?.click()}
@@ -422,6 +441,8 @@ export default function Home() {
                   placeholder={`Message #${activeChannel ? activeChannel.name : 'channel'}`}
                   className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted"
                   autoFocus
+                  onFocus={() => setIsInputFocused(true)}
+                  onBlur={() => setIsInputFocused(false)}
                   disabled={!activeChannelId}
                 />
                 <div className="flex items-center gap-2 ml-3">
@@ -440,7 +461,7 @@ export default function Home() {
                     <Send size={18} />
                   </button>
                 </div>
-              </div>
+              </motion.div>
             </form>
           </div>
         </>

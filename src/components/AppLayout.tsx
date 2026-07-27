@@ -166,27 +166,29 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 const isActive = activeChannelId === channel.id;
                 const Icon = channel.type === 'voice' ? Volume2 : Hash;
                 return (
-                  <button
-                    key={channel.id}
-                    onClick={() => setActiveChannel(channel.id)}
-                    className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg font-medium text-[15px] mb-0.5 transition-all duration-200 group relative overflow-hidden ${
-                      isActive
-                        ? "bg-white/10 text-foreground shadow-sm"
-                        : "text-muted hover:bg-white/5 hover:text-foreground"
-                    }`}
-                  >
-                    {isActive && (
-                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent/80 rounded-r shadow-[0_0_8px_rgba(var(--accent),0.8)]" />
-                    )}
-                    <Icon size={18} className="shrink-0" />
-                    <span className="truncate">{channel.name}</span>
-                  </button>
+                  <TiltCard key={channel.id} className="w-full mb-0.5">
+                    <button
+                      onClick={() => setActiveChannel(channel.id)}
+                      className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg font-medium text-[15px] transition-all duration-200 group relative overflow-hidden ${
+                        isActive
+                          ? "bg-white/10 text-foreground shadow-sm"
+                          : "text-muted hover:bg-white/5 hover:text-foreground"
+                      }`}
+                    >
+                      {isActive && (
+                        <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent/80 rounded-r shadow-[0_0_8px_rgba(var(--accent),0.8)]" />
+                      )}
+                      <Icon size={20} className="shrink-0 opacity-80" />
+                      <span className="truncate">{channel.name}</span>
+                    </button>
+                  </TiltCard>
                 );
               })}
             </div>
 
             {/* Profile Block - ALWAYS visible at the bottom of the inner sidebar */}
-            <div className="absolute bottom-0 w-full h-[70px] bg-black/10 backdrop-blur-xl border-t border-white/5 flex items-center justify-between px-3 shrink-0 z-20">
+            <TiltCard className="absolute bottom-0 w-full">
+            <div className="w-full h-[70px] bg-black/10 backdrop-blur-xl border-t border-white/5 flex items-center justify-between px-3 shrink-0 z-20">
               <div 
                 className="flex items-center gap-3 flex-1 overflow-hidden cursor-pointer hover:bg-white/10 p-2 rounded-xl transition-colors group"
                 onClick={() => setIsSettingsModalOpen(true)}
@@ -211,6 +213,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 </Tooltip>
               </div>
             </div>
+            </TiltCard>
           </div>
         )}
 
@@ -244,15 +247,17 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
             {/* Profile Block - ALWAYS visible at the bottom of the inner sidebar */}
             <div className="absolute bottom-0 w-full h-[70px] bg-tertiary border-t border-subtle flex items-center justify-between px-3 shrink-0">
-              <div className="flex items-center gap-3 flex-1 overflow-hidden cursor-pointer hover:bg-secondary p-2 rounded-md transition-colors">
-                <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center font-bold shrink-0">
-                  {profile.username ? profile.username.substring(0, 1).toUpperCase() : '?'}
+              <TiltCard className="flex-1">
+                <div className="flex items-center gap-3 w-full overflow-hidden cursor-pointer hover:bg-secondary p-2 rounded-md transition-colors">
+                  <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center font-bold shrink-0">
+                    {profile.username ? profile.username.substring(0, 1).toUpperCase() : '?'}
+                  </div>
+                  <div className="flex flex-col truncate">
+                    <span className="font-bold text-[14px] leading-tight truncate">{profile.username}</span>
+                    <span className="text-xs text-muted leading-tight truncate">{profile.status}</span>
+                  </div>
                 </div>
-                <div className="flex flex-col truncate">
-                  <span className="font-bold text-[14px] leading-tight truncate">{profile.username}</span>
-                  <span className="text-xs text-muted leading-tight truncate">{profile.status}</span>
-                </div>
-              </div>
+              </TiltCard>
               
               <div className="flex items-center gap-1 shrink-0 ml-1">
                 <button 
