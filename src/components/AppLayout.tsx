@@ -10,6 +10,7 @@ import { ServerSettingsModal } from "./ServerSettingsModal";
 import { CreateChannelModal } from "./CreateChannelModal";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useUserStore } from "@/store/userStore";
+import { usePresenceStore } from "@/store/presenceStore";
 import { useRouter } from "next/navigation";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
@@ -34,15 +35,20 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
     initializeAuth();
   }, [initializeAuth]);
 
+  const { initializePresence } = usePresenceStore();
+
   useEffect(() => {
     if (!isAuthLoading) {
       if (user === null) {
         router.push('/login');
       } else {
         fetchWorkspaces();
+        if (profile?.username) {
+          initializePresence(user.id, profile.username);
+        }
       }
     }
-  }, [user, isAuthLoading, router, fetchWorkspaces]);
+  }, [user, isAuthLoading, router, fetchWorkspaces, profile, initializePresence]);
 
   if (isAuthLoading || !user || !profile) {
     return <div className="h-screen w-screen flex items-center justify-center bg-background text-foreground text-sm font-medium tracking-widest uppercase">Connecting to Synapse...</div>;

@@ -4,50 +4,47 @@ import React, { useState } from "react";
 import { Search } from "lucide-react";
 import { useWorkspaceStore, DEFAULT_MEMBERS } from "@/store/workspaceStore";
 import { UserProfileModal } from "./UserProfileModal";
+import { usePresenceStore } from "@/store/presenceStore";
+import { useUserStore } from "@/store/userStore";
 
 export function RightSidebar() {
   const { activeWorkspaceId, serverRoles, serverMembers } = useWorkspaceStore();
+  const { onlineUsers } = usePresenceStore();
+  const { user } = useUserStore();
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedUser, setSelectedUser] = useState<any>(null);
 
   // If no workspace is selected, we show the "Active Now" home sidebar
   if (!activeWorkspaceId) {
+    const activeUsersList = Object.values(onlineUsers);
+
     return (
       <div className="w-[300px] h-full bg-secondary border-l border-subtle flex flex-col shrink-0">
-        {/* FIX: Set fixed h-14 to perfectly align with AppLayout and Page headers */}
         <div className="h-14 border-b border-subtle flex items-center px-4 shrink-0">
           <h2 className="font-bold text-foreground text-[16px]">Active Now</h2>
         </div>
         <div className="p-4 space-y-4 overflow-y-auto custom-scrollbar">
-          {/* Dummy Active Now Cards */}
-          <div className="bg-tertiary p-3 rounded-xl border border-subtle relative overflow-hidden group cursor-pointer hover:bg-tertiary-hover transition-colors"
-               onClick={() => setSelectedUser({ name: "Priya", roleColor: "#4CAF50", status: "idle", roleGroup: "Moderators", subtext: "Playing Valorant" })}>
-            <div className="absolute top-0 left-0 w-1 h-full bg-green-500" />
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-bold">P</div>
-                <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-tertiary rounded-full" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-sm">Priya</span>
-                <span className="text-xs text-muted">Playing Valorant</span>
-              </div>
-            </div>
-          </div>
-          <div className="bg-tertiary p-3 rounded-xl border border-subtle relative overflow-hidden group cursor-pointer hover:bg-tertiary-hover transition-colors"
-               onClick={() => setSelectedUser({ name: "Aryan", roleColor: "#FF5252", status: "online", roleGroup: "Core Team", subtext: "Streaming" })}>
-            <div className="absolute top-0 left-0 w-1 h-full bg-purple-500" />
-            <div className="flex items-center gap-3">
-              <div className="relative">
-                <div className="w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold">A</div>
-                <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-purple-500 border-2 border-tertiary rounded-full" />
-              </div>
-              <div className="flex flex-col">
-                <span className="font-bold text-sm">Aryan</span>
-                <span className="text-xs text-muted">Streaming</span>
+          {activeUsersList.length === 0 && (
+            <div className="text-sm text-muted text-center pt-10">No one is active right now.</div>
+          )}
+          {activeUsersList.map((u, i) => (
+            <div key={i} className="bg-tertiary p-3 rounded-xl border border-subtle relative overflow-hidden group cursor-pointer hover:bg-tertiary-hover transition-colors"
+                 onClick={() => setSelectedUser({ name: u.username, roleColor: "#8b5cf6", status: "online", roleGroup: "Member", subtext: "Online" })}>
+              <div className="absolute top-0 left-0 w-1 h-full bg-accent" />
+              <div className="flex items-center gap-3">
+                <div className="relative">
+                  <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-bold">
+                    {u.username ? u.username.substring(0, 1).toUpperCase() : '?'}
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-tertiary rounded-full" />
+                </div>
+                <div className="flex flex-col">
+                  <span className="font-bold text-sm">{u.username}{u.userId === user?.id && " (You)"}</span>
+                  <span className="text-xs text-muted">Online</span>
+                </div>
               </div>
             </div>
-          </div>
+          ))}
         </div>
         <UserProfileModal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)} user={selectedUser} />
       </div>
