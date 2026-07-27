@@ -1,9 +1,9 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion } from "framer-motion";
 import AppLayout from "@/components/AppLayout";
-import { Hash, Send, Smile, Paperclip, Users, MessageSquare, Volume2 } from "lucide-react";
+import { Hash, Send, Smile, Paperclip, Users, MessageSquare, Volume2, Pin } from "lucide-react";
 import { useMessageStore } from "@/store/messageStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useUserStore } from "@/store/userStore";
@@ -14,11 +14,11 @@ import { MessageContextMenu } from "@/components/MessageContextMenu";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from "@/lib/supabase";
-import { useRef } from "react";
+import { toast } from "sonner";
 
 export default function Home() {
-  const { activeWorkspaceId, activeChannelId, channels } = useWorkspaceStore();
-  const { messages, fetchMessages, sendMessage, updateMessage, deleteMessage, subscribeToMessages, unsubscribeFromMessages } = useMessageStore();
+  const { activeWorkspaceId, activeChannelId, channels, workspaces } = useWorkspaceStore();
+  const { messages, fetchMessages, sendMessage, updateMessage, deleteMessage, toggleReaction, subscribeToMessages, unsubscribeFromMessages } = useMessageStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [inputValue, setInputValue] = useState("");
@@ -221,6 +221,16 @@ export default function Home() {
             <span className="font-bold text-[16px]">{activeChannel ? activeChannel.name : 'Select a channel'}</span>
           </div>
         </div>
+        {activeChannel && (
+          <div className="flex items-center gap-4 text-muted">
+            <button className="hover:text-foreground transition-colors" title="Pinned Messages" onClick={() => toast.info('Pinned Messages Drawer coming in Phase 10 part 2!')}>
+              <Pin size={20} />
+            </button>
+            <button className="hover:text-foreground transition-colors" title="Member List">
+              <Users size={20} />
+            </button>
+          </div>
+        )}
       </div>
 
       {activeChannel?.type === 'voice' ? (
@@ -276,6 +286,11 @@ export default function Home() {
                     <span className="text-xs text-muted ml-1">
                       {new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
                     </span>
+                    {msg.is_pinned && (
+                      <span className="text-[10px] text-accent font-bold uppercase tracking-wider flex items-center gap-1 ml-1 bg-accent/10 px-1.5 py-0.5 rounded">
+                        📌 Pinned
+                      </span>
+                    )}
                   </div>
                   
                   {/* Message Content */}
@@ -315,10 +330,44 @@ export default function Home() {
                       {msg.is_edited && <span className="text-[10px] text-muted ml-1 select-none inline-block">(edited)</span>}
                     </div>
                   )}
+                  {/* Reactions Area */}
+                  {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mt-1.5">
+                      {Object.entries(msg.reactions).map(([emoji, users]) => {
+                        const hasReacted = user && users.includes(user.id);
+                        return (
+                          <button
+                            key={emoji}
+                            onClick={() => user && toggleReaction(msg.id, emoji, user.id)}
+                            className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[6px] border ${
+                              hasReacted 
+                                ? 'bg-accent/20 border-accent/50 text-accent' 
+                                : 'bg-secondary/50 border-subtle text-muted hover:bg-tertiary hover:border-subtle/80 hover:text-foreground'
+                            } transition-colors text-[13px] font-medium`}
+                          >
+                            <span>{emoji}</span>
+                            <span>{users.length}</span>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  )}
                 </div>
 
-                {/* Hover Actions (Ellipsis Menu) */}
+                {/* Hover Actions Menu */}
                 <div className="absolute top-0 right-4 -translate-y-2 bg-secondary border border-subtle rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center overflow-hidden z-10">
+                  <div className="flex items-center border-r border-subtle pr-1 mr-1">
+                    {['👍', '❤️', '😂', '🔥'].map(emoji => (
+                      <button
+                        key={emoji}
+                        onClick={() => user && toggleReaction(msg.id, emoji, user.id)}
+                        className="p-1.5 text-muted hover:text-foreground hover:bg-tertiary hover:scale-110 transition-all"
+                        title={emoji}
+                      >
+                        {emoji}
+                      </button>
+                    ))}
+                  </div>
                   <button 
                     onClick={(e) => handleContextMenu(e, msg)}
                     className="p-1.5 text-muted hover:text-foreground hover:bg-tertiary transition-colors"
@@ -407,11 +456,27 @@ export default function Home() {
       />
       <MessageContextMenu 
         isOpen={contextMenu.isOpen}
-        onClose={() => setContextMenu({ ...contextMenu, isOpen: false })}
         position={{ x: contextMenu.x, y: contextMenu.y }}
-        onEdit={() => handleStartEdit(contextMenu.msg)}
-        onDelete={(e) => handleDeleteClick(contextMenu.msg, e)}
-        canEditDelete={Boolean(user && contextMenu.msg?.user_id === user?.id)}
+        onClose={() => setContextMenu(prev => ({ ...prev, isOpen: false }))}
+        onEdit={() => {
+          if (contextMenu.msg) {
+            setEditingMessageId(contextMenu.msg.id);
+            setEditContent(contextMenu.msg.content);
+          }
+        }}
+        onDelete={() => setDeleteModalMessage(contextMenu.msg)}
+        canEditDelete={contextMenu.msg?.user_id === user?.id || workspaces.find(w => w.id === activeChannel?.workspace_id)?.owner_id === user?.id}
+        msg={contextMenu.msg}
+        onPin={() => {
+          if (contextMenu.msg) {
+            useMessageStore.getState().togglePin(contextMenu.msg.id, contextMenu.msg.is_pinned || false);
+          }
+        }}
+        onReaction={(emoji) => {
+          if (contextMenu.msg && user) {
+            useMessageStore.getState().toggleReaction(contextMenu.msg.id, emoji, user.id);
+          }
+        }}
       />
     </>
   );

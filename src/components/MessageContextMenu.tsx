@@ -5,6 +5,7 @@ import {
   Hash, Copy, Pin, Grip, BellOff, Link, 
   Volume2, Trash2, Fingerprint
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 interface MessageContextMenuProps {
   isOpen: boolean;
@@ -13,9 +14,12 @@ interface MessageContextMenuProps {
   onEdit: () => void;
   onDelete: (e?: React.MouseEvent) => void;
   canEditDelete: boolean;
+  msg?: any;
+  onPin?: () => void;
+  onReaction?: (emoji: string) => void;
 }
 
-export function MessageContextMenu({ isOpen, onClose, position, onEdit, onDelete, canEditDelete }: MessageContextMenuProps) {
+export function MessageContextMenu({ isOpen, onClose, position, onEdit, onDelete, canEditDelete, msg, onPin, onReaction }: MessageContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -30,13 +34,25 @@ export function MessageContextMenu({ isOpen, onClose, position, onEdit, onDelete
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, [isOpen, onClose]);
 
-  if (!isOpen) return null;
+  if (!isOpen || !msg) return null;
 
   // Render mock reactions
-  const quickReactions = ['💀', '🗿', '🔥', '👍'];
+  const quickReactions = ['👍', '❤️', '😂', '🔥', '💀'];
 
   const triggerMock = (feature: string) => {
-    alert(`${feature} is coming in Phase 6!`);
+    toast.info(`${feature} is coming in the next update!`);
+    onClose();
+  };
+
+  const handleCopyText = () => {
+    navigator.clipboard.writeText(msg.content);
+    toast.success('Text copied to clipboard!');
+    onClose();
+  };
+
+  const handleCopyLink = () => {
+    navigator.clipboard.writeText(`${window.location.origin}/channels/${msg.channel_id}/${msg.id}`);
+    toast.success('Message link copied to clipboard!');
     onClose();
   };
 
@@ -50,23 +66,26 @@ export function MessageContextMenu({ isOpen, onClose, position, onEdit, onDelete
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.1 }}
           style={{ top: position.y, left: position.x }}
-          className="fixed z-50 w-64 bg-[#111214] border border-[#1e1f22] rounded-md shadow-[0_8px_16px_rgba(0,0,0,0.24)] py-1.5 flex flex-col text-[#dbdee1] font-medium text-sm"
+          className="fixed z-50 w-64 bg-secondary/80 backdrop-blur-xl border border-subtle rounded-xl shadow-2xl py-1.5 flex flex-col text-foreground font-medium text-sm"
         >
           {/* Quick Reactions */}
-          <div className="flex items-center justify-between px-2 pb-1.5 border-b border-[#2b2d31] mb-1.5">
+          <div className="flex items-center justify-between px-2 pb-1.5 border-b border-subtle mb-1.5">
             {quickReactions.map((emoji, i) => (
               <button 
                 key={i} 
-                onClick={() => triggerMock(`Reaction ${emoji}`)}
-                className="w-8 h-8 flex items-center justify-center rounded hover:bg-[#5865f2] transition-colors text-lg"
+                onClick={() => {
+                  if (onReaction) onReaction(emoji);
+                  onClose();
+                }}
+                className="w-8 h-8 flex items-center justify-center rounded-lg hover:bg-tertiary transition-colors text-lg"
               >
                 {emoji}
               </button>
             ))}
           </div>
 
-          <MenuItem icon={<SmilePlus size={16} />} label="Add Reaction" hasSubmenu onClick={() => triggerMock('Add Reaction')} />
-          <div className="h-[1px] bg-[#2b2d31] my-1.5 mx-2" />
+          <MenuItem icon={<SmilePlus size={16} />} label="Add Reaction" hasSubmenu onClick={() => triggerMock('Full Emoji Picker')} />
+          <div className="h-[1px] bg-subtle my-1.5 mx-2" />
           
           {canEditDelete && (
             <MenuItem icon={<Edit2 size={16} />} label="Edit Message" onClick={() => { onEdit(); onClose(); }} />
@@ -75,16 +94,16 @@ export function MessageContextMenu({ isOpen, onClose, position, onEdit, onDelete
           <MenuItem icon={<Forward size={16} />} label="Forward" onClick={() => triggerMock('Forward')} />
           <MenuItem icon={<Hash size={16} />} label="Create Thread" onClick={() => triggerMock('Create Thread')} />
           
-          <div className="h-[1px] bg-[#2b2d31] my-1.5 mx-2" />
+          <div className="h-[1px] bg-subtle my-1.5 mx-2" />
           
-          <MenuItem icon={<Copy size={16} />} label="Copy Text" onClick={() => triggerMock('Copy Text')} />
-          <MenuItem icon={<Pin size={16} />} label="Pin Message" onClick={() => triggerMock('Pin Message')} />
+          <MenuItem icon={<Copy size={16} />} label="Copy Text" onClick={handleCopyText} />
+          <MenuItem icon={<Pin size={16} />} label={msg.is_pinned ? "Unpin Message" : "Pin Message"} onClick={() => { if (onPin) onPin(); onClose(); }} />
           <MenuItem icon={<Grip size={16} />} label="Apps" hasSubmenu onClick={() => triggerMock('Apps')} />
           
-          <div className="h-[1px] bg-[#2b2d31] my-1.5 mx-2" />
+          <div className="h-[1px] bg-subtle my-1.5 mx-2" />
           
           <MenuItem icon={<BellOff size={16} />} label="Mark Unread" onClick={() => triggerMock('Mark Unread')} />
-          <MenuItem icon={<Link size={16} />} label="Copy Message Link" onClick={() => triggerMock('Copy Message Link')} />
+          <MenuItem icon={<Link size={16} />} label="Copy Message Link" onClick={handleCopyLink} />
           <MenuItem icon={<Volume2 size={16} />} label="Speak Message" onClick={() => triggerMock('Speak Message')} />
           
           {canEditDelete && (

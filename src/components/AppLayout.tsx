@@ -11,8 +11,10 @@ import { CreateChannelModal } from "./CreateChannelModal";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useUserStore } from "@/store/userStore";
 import { usePresenceStore } from "@/store/presenceStore";
+import { Tooltip } from "./Tooltip";
 import { useRouter } from "next/navigation";
-
+import { Toaster } from "sonner";
+import { TooltipProvider } from "@radix-ui/react-tooltip";
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const { user, profile, isLoading: isAuthLoading, initializeAuth } = useUserStore();
@@ -55,63 +57,70 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div className="h-screen w-screen bg-background text-foreground overflow-hidden flex transition-colors duration-300">
-      
-      {/* Workspace Sidebar (Far Left) */}
+    <TooltipProvider delayDuration={200}>
+      <div className="h-screen w-screen bg-background text-foreground overflow-hidden flex transition-colors duration-300">
+        <Toaster theme="system" position="bottom-right" richColors />
+        
+        {/* Workspace Sidebar (Far Left) */}
       <div className="w-[72px] h-full bg-tertiary flex flex-col items-center py-4 gap-3 border-r border-subtle z-20 shrink-0">
         {/* Home Button */}
-        <button
-          onClick={() => setActiveWorkspace(null)}
-          className={`w-12 h-12 rounded-[16px] flex items-center justify-center transition-all duration-200 group relative ${
-            !activeWorkspaceId 
-              ? "bg-accent text-white rounded-[12px]" 
-              : "bg-secondary text-foreground hover:bg-accent hover:text-white hover:rounded-[12px]"
-          }`}
-        >
-          <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M12 2L2 12l2.9 2.9L12 7.8l7.1 7.1L22 12 12 2z" />
-            <path d="M4 14v7a1 1 0 001 1h14a1 1 0 001-1v-7" />
-          </svg>
-          {/* Active Pill Indicator */}
-          {!activeWorkspaceId && (
-            <div className="absolute -left-1 w-2 h-10 bg-accent rounded-r-full" />
-          )}
-          <div className={`absolute -left-1 w-2 h-5 bg-foreground rounded-r-full transition-all duration-200 opacity-0 group-hover:opacity-100 ${!activeWorkspaceId ? 'hidden' : ''}`} />
-        </button>
-
-        <div className="w-8 h-[2px] bg-subtle rounded-full mx-auto" />
-
-        {workspaces.map((ws) => (
+        <Tooltip content="Direct Messages" side="right">
           <button
-            key={ws.id}
-            onClick={() => setActiveWorkspace(ws.id)}
-            className={`w-12 h-12 rounded-[16px] flex items-center justify-center font-bold text-sm transition-all duration-200 premium-shadow group relative ${
-              activeWorkspaceId === ws.id 
+            onClick={() => setActiveWorkspace(null)}
+            className={`w-12 h-12 rounded-[16px] flex items-center justify-center transition-all duration-200 group relative ${
+              !activeWorkspaceId 
                 ? "bg-accent text-white rounded-[12px]" 
                 : "bg-secondary text-foreground hover:bg-accent hover:text-white hover:rounded-[12px]"
             }`}
           >
-            {ws.icon_url ? (
-              <img src={ws.icon_url} alt={ws.name} className="w-full h-full rounded-[inherit] object-cover" />
-            ) : (
-              ws.short_name
-            )}
+            <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M12 2L2 12l2.9 2.9L12 7.8l7.1 7.1L22 12 12 2z" />
+              <path d="M4 14v7a1 1 0 001 1h14a1 1 0 001-1v-7" />
+            </svg>
             {/* Active Pill Indicator */}
-            {activeWorkspaceId === ws.id && (
+            {!activeWorkspaceId && (
               <div className="absolute -left-1 w-2 h-10 bg-accent rounded-r-full" />
             )}
-            <div className={`absolute -left-1 w-2 h-5 bg-foreground rounded-r-full transition-all duration-200 opacity-0 group-hover:opacity-100 ${activeWorkspaceId === ws.id ? 'hidden' : ''}`} />
+            <div className={`absolute -left-1 w-2 h-5 bg-foreground rounded-r-full transition-all duration-200 opacity-0 group-hover:opacity-100 ${!activeWorkspaceId ? 'hidden' : ''}`} />
           </button>
+        </Tooltip>
+
+        <div className="w-8 h-[2px] bg-subtle rounded-full mx-auto" />
+
+        {workspaces.map((ws) => (
+          <Tooltip key={ws.id} content={ws.name} side="right">
+            <button
+              onClick={() => setActiveWorkspace(ws.id)}
+              className={`w-12 h-12 rounded-[16px] flex items-center justify-center font-bold text-sm transition-all duration-200 premium-shadow group relative ${
+                activeWorkspaceId === ws.id 
+                  ? "bg-accent text-white rounded-[12px]" 
+                  : "bg-secondary text-foreground hover:bg-accent hover:text-white hover:rounded-[12px]"
+              }`}
+            >
+              {ws.icon_url ? (
+                <img src={ws.icon_url} alt={ws.name} className="w-full h-full rounded-[inherit] object-cover" />
+              ) : (
+                ws.short_name
+              )}
+              {/* Active Pill Indicator */}
+              {activeWorkspaceId === ws.id && (
+                <div className="absolute -left-1 w-2 h-10 bg-accent rounded-r-full" />
+              )}
+              <div className={`absolute -left-1 w-2 h-5 bg-foreground rounded-r-full transition-all duration-200 opacity-0 group-hover:opacity-100 ${activeWorkspaceId === ws.id ? 'hidden' : ''}`} />
+            </button>
+          </Tooltip>
         ))}
         
         {/* Add Workspace Button */}
-        <button 
-          onClick={() => setIsCreateModalOpen(true)}
-          className="w-12 h-12 rounded-[16px] bg-secondary text-green-500 hover:bg-green-500 hover:text-white flex items-center justify-center transition-all duration-200 group relative"
-        >
-          <Plus size={24} />
-          <div className="absolute -left-1 w-2 h-5 bg-foreground rounded-r-full transition-all duration-200 opacity-0 group-hover:opacity-100" />
-        </button>
+        <Tooltip content="Add a Server" side="right">
+          <button 
+            onClick={() => setIsCreateModalOpen(true)}
+            className="w-12 h-12 rounded-[16px] bg-secondary text-green-500 hover:bg-green-500 hover:text-white flex items-center justify-center transition-all duration-200 group relative"
+          >
+            <Plus size={24} />
+            <div className="absolute -left-1 w-2 h-5 bg-foreground rounded-r-full transition-all duration-200 opacity-0 group-hover:opacity-100" />
+          </button>
+        </Tooltip>
 
         {/* Bottom actions (Theme) */}
         <div className="mt-auto">
@@ -274,6 +283,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         />
       )}
 
-    </div>
+      </div>
+    </TooltipProvider>
   );
 }

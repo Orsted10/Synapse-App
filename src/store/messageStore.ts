@@ -9,6 +9,8 @@ export interface Message {
   content: string;
   created_at: string;
   is_edited: boolean;
+  is_pinned?: boolean;
+  reactions?: Record<string, string[]>; // { '👍': ['user_id_1', 'user_id_2'] }
   user?: Profile; // Populated by join
 }
 
@@ -20,6 +22,8 @@ interface MessageState {
   sendMessage: (channelId: string, content: string) => Promise<void>;
   updateMessage: (messageId: string, newContent: string) => Promise<void>;
   deleteMessage: (messageId: string) => Promise<void>;
+  toggleReaction: (messageId: string, emoji: string, userId: string) => Promise<void>;
+  togglePin: (messageId: string, currentPinState: boolean) => Promise<void>;
   subscribeToMessages: (channelId: string) => void;
   unsubscribeFromMessages: () => void;
 }
@@ -96,6 +100,39 @@ export const useMessageStore = create<MessageState>((set, get) => ({
       messages: state.messages.filter(msg => msg.id !== messageId)
     }));
     await supabase.from('messages').delete().eq('id', messageId);
+  },
+
+  toggleReaction: async (messageId: string, emoji: string, userId: string) => {
+    let currentReactions = {};
+    set((state) => {
+      const messages = state.messages.map(msg => {
+        if (msg.id === messageId) {
+          const reactions = { ...(msg.reactions || {}) };
+          const userList = reactions[emoji] || [];
+          if (userList.includes(userId)) {
+            reactions[emoji] = userList.filter(id => id !== userId);
+            if (reactions[emoji].length === 0) delete reactions[emoji];
+          } else {
+            reactions[emoji] = [...userList, userId];
+          }
+          currentReactions = reactions;
+          return { ...msg, reactions };
+        }
+        return msg;
+      });
+      return { messages };
+    });
+
+    await supabase.from('messages').update({ reactions: currentReactions }).eq('id', messageId);
+  },
+
+  togglePin: async (messageId: string, currentPinState: boolean) => {
+    set((state) => ({
+      messages: state.messages.map(msg => 
+        msg.id === messageId ? { ...msg, is_pinned: !currentPinState } : msg
+      )
+    }));
+    await supabase.from('messages').update({ is_pinned: !currentPinState }).eq('id', messageId);
   },
 
   subscribeToMessages: (channelId: string) => {

@@ -10,8 +10,10 @@
   },
   "dependencies": {
     "@ai-sdk/google": "^3.0.82",
+    "@radix-ui/react-tooltip": "^1.2.16",
     "@supabase/supabase-js": "^2.108.0",
     "ai": "^6.0.205",
+    "emoji-picker-react": "^4.19.1",
     "framer-motion": "^12.40.0",
     "lucide-react": "^1.17.0",
     "next": "16.2.7",
@@ -20,6 +22,7 @@
     "react-dom": "19.2.4",
     "react-markdown": "^10.1.0",
     "remark-gfm": "^4.0.1",
+    "sonner": "^2.0.7",
     "zod": "^4.4.3",
     "zustand": "^5.0.14"
   },
