@@ -91,14 +91,14 @@ export function ServerSettingsModal({ isOpen, onClose, workspaceId }: ServerSett
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-background/80 backdrop-blur-md"
+            className="absolute inset-0 bg-black/60 backdrop-blur-3xl"
             onClick={onClose}
           />
           <motion.div 
             initial={{ scale: 0.95, opacity: 0, y: 20 }}
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
-            className="bg-secondary w-full max-w-4xl h-[80vh] rounded-2xl shadow-2xl overflow-hidden relative z-10 border border-subtle flex"
+            className="glass-panel-heavy w-full max-w-4xl h-[80vh] rounded-[32px] overflow-hidden relative z-10 border border-white/10 flex"
           >
             {/* Sidebar */}
             <div className="w-[240px] bg-tertiary border-r border-subtle p-4 flex flex-col gap-1 shrink-0">

@@ -214,7 +214,7 @@ export default function Home() {
     <>
       <AppLayout>
       {/* Top Header */}
-      <div className="h-14 border-b border-subtle flex items-center justify-between px-6 shrink-0 bg-background/80 backdrop-blur-md z-10 sticky top-0 shadow-sm">
+      <div className="h-14 border-b border-white/5 flex items-center justify-between px-6 shrink-0 glass-panel-heavy z-10 sticky top-0">
         <div className="flex items-center gap-3">
           <Hash size={22} className="text-muted" />
           <div className="flex items-center gap-3">
@@ -259,7 +259,7 @@ export default function Home() {
                 transition={{ duration: 0.2 }}
                 key={msg.id} 
                 onContextMenu={(e) => handleContextMenu(e, msg)}
-                className={`flex gap-4 group relative hover:bg-tertiary/30 -mx-4 px-4 py-1 rounded-md transition-colors ${contextMenu.isOpen && contextMenu.msg?.id === msg.id ? 'bg-tertiary/30' : ''}`}
+                className={`flex gap-4 group relative hover:bg-white/5 hover:backdrop-blur-md -mx-4 px-4 py-2 rounded-2xl transition-all duration-300 ${contextMenu.isOpen && contextMenu.msg?.id === msg.id ? 'bg-white/5 backdrop-blur-md shadow-lg' : ''}`}
               >
                 {/* Avatar */}
                 <div 
@@ -355,8 +355,8 @@ export default function Home() {
                 </div>
 
                 {/* Hover Actions Menu */}
-                <div className="absolute top-0 right-4 -translate-y-2 bg-secondary border border-subtle rounded-md shadow-sm opacity-0 group-hover:opacity-100 transition-opacity flex items-center overflow-hidden z-10">
-                  <div className="flex items-center border-r border-subtle pr-1 mr-1">
+                <div className="absolute top-0 right-4 -translate-y-4 glass-panel rounded-xl opacity-0 group-hover:opacity-100 group-hover:-translate-y-5 transition-all duration-300 flex items-center overflow-hidden z-10">
+                  <div className="flex items-center border-r border-white/10 pr-1 mr-1">
                     {['👍', '❤️', '😂', '🔥'].map(emoji => (
                       <button
                         key={emoji}
@@ -399,7 +399,7 @@ export default function Home() {
                 {activeTypingUsers.join(', ')} {activeTypingUsers.length === 1 ? 'is' : 'are'} typing...
               </div>
             )}
-            <form onSubmit={handleSendMessage} className="relative">
+            <form onSubmit={handleSendMessage} className="relative group">
               <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -407,7 +407,7 @@ export default function Home() {
                 className="hidden" 
                 accept="image/*"
               />
-              <div className="flex items-center bg-secondary/80 hover:bg-secondary transition-colors rounded-[16px] px-4 py-3 border border-subtle focus-within:border-accent shadow-sm">
+              <div className="flex items-center glass-panel-heavy rounded-full px-6 py-4 shadow-xl group-hover:shadow-[0_10px_40px_-10px_rgba(var(--accent),0.3)] transition-all duration-500">
                 <button 
                   type="button" 
                   onClick={() => fileInputRef.current?.click()}

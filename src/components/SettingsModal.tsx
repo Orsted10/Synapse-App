@@ -62,7 +62,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            className="absolute inset-0 bg-background/90 backdrop-blur-xl"
+            className="absolute inset-0 bg-black/60 backdrop-blur-3xl"
             onClick={onClose}
           />
           <motion.div 
@@ -70,7 +70,7 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
             animate={{ scale: 1, opacity: 1, y: 0 }}
             exit={{ scale: 0.95, opacity: 0, y: 20 }}
             transition={{ type: "spring", damping: 25, stiffness: 300 }}
-            className="bg-secondary w-full h-full sm:w-[1000px] sm:h-[80vh] sm:rounded-2xl shadow-2xl overflow-hidden relative z-10 border border-subtle flex"
+            className="glass-panel-heavy w-full h-full sm:w-[1000px] sm:h-[80vh] sm:rounded-[32px] overflow-hidden relative z-10 flex"
           >
             {/* Sidebar */}
             <div className="w-[240px] bg-tertiary/50 border-r border-subtle p-4 flex flex-col gap-1 shrink-0">

@@ -58,19 +58,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="h-screen w-screen bg-background text-foreground overflow-hidden flex transition-colors duration-300">
+      <div className="h-screen w-screen bg-mesh text-foreground overflow-hidden flex transition-colors duration-500 relative">
         <Toaster theme="system" position="bottom-right" richColors />
         
         {/* Workspace Sidebar (Far Left) */}
-      <div className="w-[72px] h-full bg-tertiary flex flex-col items-center py-4 gap-3 border-r border-subtle z-20 shrink-0">
+      <div className="w-[72px] h-full glass-panel-heavy border-r border-subtle/50 flex flex-col items-center py-4 gap-3 z-20 shrink-0">
         {/* Home Button */}
         <Tooltip content="Direct Messages" side="right">
           <button
             onClick={() => setActiveWorkspace(null)}
-            className={`w-12 h-12 rounded-[16px] flex items-center justify-center transition-all duration-200 group relative ${
+            className={`w-12 h-12 flex items-center justify-center transition-all duration-300 group relative ${
               !activeWorkspaceId 
-                ? "bg-accent text-white rounded-[12px]" 
-                : "bg-secondary text-foreground hover:bg-accent hover:text-white hover:rounded-[12px]"
+                ? "bg-accent text-white rounded-[12px] shadow-[0_0_20px_rgba(var(--accent),0.5)]" 
+                : "bg-secondary/50 text-foreground hover:bg-accent hover:text-white hover:rounded-[12px] rounded-[16px] glowing-border"
             }`}
           >
             <svg className="w-7 h-7" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
@@ -79,34 +79,35 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </svg>
             {/* Active Pill Indicator */}
             {!activeWorkspaceId && (
-              <div className="absolute -left-1 w-2 h-10 bg-accent rounded-r-full" />
+              <div className="absolute -left-3 w-2 h-10 bg-accent rounded-r-full shadow-[0_0_10px_rgba(var(--accent),0.8)]" />
             )}
-            <div className={`absolute -left-1 w-2 h-5 bg-foreground rounded-r-full transition-all duration-200 opacity-0 group-hover:opacity-100 ${!activeWorkspaceId ? 'hidden' : ''}`} />
+            <div className={`absolute -left-3 w-2 h-5 bg-foreground/50 rounded-r-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${!activeWorkspaceId ? 'hidden' : ''}`} />
           </button>
         </Tooltip>
 
-        <div className="w-8 h-[2px] bg-subtle rounded-full mx-auto" />
+        <div className="w-8 h-[2px] bg-subtle/50 rounded-full mx-auto" />
 
         {workspaces.map((ws) => (
           <Tooltip key={ws.id} content={ws.name} side="right">
             <button
               onClick={() => setActiveWorkspace(ws.id)}
-              className={`w-12 h-12 rounded-[16px] flex items-center justify-center font-bold text-sm transition-all duration-200 premium-shadow group relative ${
+              className={`w-12 h-12 flex items-center justify-center font-bold text-sm transition-all duration-300 premium-shadow group relative ${
                 activeWorkspaceId === ws.id 
-                  ? "bg-accent text-white rounded-[12px]" 
-                  : "bg-secondary text-foreground hover:bg-accent hover:text-white hover:rounded-[12px]"
+                  ? "bg-accent text-white rounded-[12px] shadow-[0_0_20px_rgba(var(--accent),0.5)]" 
+                  : "bg-secondary/50 text-foreground hover:bg-accent hover:text-white hover:rounded-[12px] rounded-[16px] glowing-border"
               }`}
             >
               {ws.icon_url ? (
-                <img src={ws.icon_url} alt={ws.name} className="w-full h-full rounded-[inherit] object-cover" />
+                <img src={ws.icon_url} alt={ws.name} className="w-full h-full object-cover rounded-inherit" />
               ) : (
-                ws.short_name
+                ws.name.substring(0, 2).toUpperCase()
               )}
+              
               {/* Active Pill Indicator */}
               {activeWorkspaceId === ws.id && (
-                <div className="absolute -left-1 w-2 h-10 bg-accent rounded-r-full" />
+                <div className="absolute -left-3 w-2 h-10 bg-accent rounded-r-full shadow-[0_0_10px_rgba(var(--accent),0.8)]" />
               )}
-              <div className={`absolute -left-1 w-2 h-5 bg-foreground rounded-r-full transition-all duration-200 opacity-0 group-hover:opacity-100 ${activeWorkspaceId === ws.id ? 'hidden' : ''}`} />
+              <div className={`absolute -left-3 w-2 h-5 bg-foreground/50 rounded-r-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${activeWorkspaceId === ws.id ? 'hidden' : ''}`} />
             </button>
           </Tooltip>
         ))}
@@ -115,10 +116,10 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <Tooltip content="Add a Server" side="right">
           <button 
             onClick={() => setIsCreateModalOpen(true)}
-            className="w-12 h-12 rounded-[16px] bg-secondary text-green-500 hover:bg-green-500 hover:text-white flex items-center justify-center transition-all duration-200 group relative"
+            className="w-12 h-12 rounded-[16px] bg-secondary/50 text-green-500 hover:bg-green-500 hover:text-white flex items-center justify-center transition-all duration-300 group relative glowing-border"
           >
             <Plus size={24} />
-            <div className="absolute -left-1 w-2 h-5 bg-foreground rounded-r-full transition-all duration-200 opacity-0 group-hover:opacity-100" />
+            <div className="absolute -left-3 w-2 h-5 bg-foreground/50 rounded-r-full transition-all duration-300 opacity-0 group-hover:opacity-100" />
           </button>
         </Tooltip>
 
@@ -133,11 +134,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         
         {/* Inner Sidebar (Channels) - Only show if in a workspace */}
         {activeWorkspaceId && (
-          <div className="w-[240px] bg-secondary border-r border-subtle flex flex-col shrink-0 relative">
+          <div className="w-[240px] glass-panel border-r border-subtle/50 flex flex-col shrink-0 relative z-10">
             {/* Workspace Header */}
             <div 
               onClick={() => setIsServerSettingsModalOpen(true)}
-              className="h-14 border-b border-subtle flex items-center justify-between px-4 font-bold hover:bg-tertiary cursor-pointer transition-colors shadow-sm z-10 shrink-0 group"
+              className="h-14 border-b border-subtle/50 flex items-center justify-between px-4 font-bold hover:bg-white/5 cursor-pointer transition-colors shadow-sm z-10 shrink-0 group"
             >
               <span className="truncate">{workspaces.find(w => w.id === activeWorkspaceId)?.name}</span>
               <Settings size={16} className="text-muted group-hover:text-foreground transition-colors" />
@@ -148,7 +149,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                 <span className="text-xs font-bold uppercase tracking-wider">Text Channels</span>
                 <button 
                   onClick={() => setIsCreateChannelModalOpen(true)}
-                  className="hover:text-foreground transition-colors p-1"
+                  className="hover:text-foreground transition-colors p-1 bg-white/0 hover:bg-white/10 rounded-full"
                 >
                   <Plus size={16} />
                 </button>
@@ -160,13 +161,16 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   <button
                     key={channel.id}
                     onClick={() => setActiveChannel(channel.id)}
-                    className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[15px] transition-all group ${
-                      isActive 
-                        ? "bg-accent/15 text-accent" 
-                        : "text-muted hover:bg-tertiary hover:text-foreground"
+                    className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg font-medium text-[15px] mb-0.5 transition-all duration-200 group relative overflow-hidden ${
+                      isActive
+                        ? "bg-white/10 text-foreground shadow-sm"
+                        : "text-muted hover:bg-white/5 hover:text-foreground"
                     }`}
                   >
-                    <Icon size={18} className={isActive ? "text-accent" : "text-muted group-hover:text-foreground"} />
+                    {isActive && (
+                      <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent/80 rounded-r shadow-[0_0_8px_rgba(var(--accent),0.8)]" />
+                    )}
+                    <Icon size={18} className="shrink-0" />
                     <span className="truncate">{channel.name}</span>
                   </button>
                 );
@@ -174,9 +178,12 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             </div>
 
             {/* Profile Block - ALWAYS visible at the bottom of the inner sidebar */}
-            <div className="absolute bottom-0 w-full h-[70px] bg-tertiary border-t border-subtle flex items-center justify-between px-3 shrink-0">
-              <div className="flex items-center gap-3 flex-1 overflow-hidden cursor-pointer hover:bg-secondary p-2 rounded-md transition-colors">
-                <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center font-bold shrink-0">
+            <div className="absolute bottom-0 w-full h-[70px] bg-black/10 backdrop-blur-xl border-t border-white/5 flex items-center justify-between px-3 shrink-0 z-20">
+              <div 
+                className="flex items-center gap-3 flex-1 overflow-hidden cursor-pointer hover:bg-white/10 p-2 rounded-xl transition-colors group"
+                onClick={() => setIsSettingsModalOpen(true)}
+              >
+                <div className="w-9 h-9 rounded-full bg-accent text-white flex items-center justify-center font-bold shrink-0 shadow-lg group-hover:scale-105 transition-transform duration-300">
                   {profile.username ? profile.username.substring(0, 1).toUpperCase() : '?'}
                 </div>
                 <div className="flex flex-col truncate">
@@ -186,12 +193,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               </div>
               
               <div className="flex items-center gap-1 shrink-0 ml-1">
-                <button 
-                  onClick={() => setIsSettingsModalOpen(true)}
-                  className="p-2 text-muted hover:text-foreground hover:bg-secondary rounded-md transition-colors"
-                >
-                  <Settings size={18} />
-                </button>
+                <Tooltip content="User Settings">
+                  <button 
+                    onClick={() => setIsSettingsModalOpen(true)}
+                    className="p-2 text-muted hover:text-foreground hover:bg-white/10 rounded-xl transition-colors"
+                  >
+                    <Settings size={18} />
+                  </button>
+                </Tooltip>
               </div>
             </div>
           </div>
