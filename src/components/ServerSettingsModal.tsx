@@ -4,7 +4,7 @@ import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Settings, Users, Shield, Hash, Trash2 } from "lucide-react";
 import { supabase } from "@/lib/supabase";
-import { useWorkspaceStore, DEFAULT_MEMBERS } from "@/store/workspaceStore";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 
 interface ServerSettingsModalProps {
   isOpen: boolean;
@@ -14,23 +14,18 @@ interface ServerSettingsModalProps {
 
 export function ServerSettingsModal({ isOpen, onClose, workspaceId }: ServerSettingsModalProps) {
   const [activeTab, setActiveTab] = useState("overview");
-  const { workspaces, fetchWorkspaces, serverRoles, setServerRoles, updateRole, serverMembers, toggleMemberRole } = useWorkspaceStore();
+  const { 
+    workspaces, fetchWorkspaces, 
+    serverRoles, createRole, updateRole, deleteRole, 
+    serverMembers, toggleMemberRole 
+  } = useWorkspaceStore();
+  
   const workspace = workspaces.find(w => w.id === workspaceId);
   
   const [serverName, setServerName] = useState(workspace?.name || "");
   const [isLoading, setIsLoading] = useState(false);
 
   const roles = serverRoles[workspaceId] || [];
-
-  React.useEffect(() => {
-    if (isOpen && workspace && !serverRoles[workspaceId]) {
-      setServerRoles(workspaceId, [
-        { id: 'core', name: 'Core Team', color: '#FF5252', members: 2, permissions: { admin: true, manageChannels: true, sendMessages: true } },
-        { id: 'mod', name: 'Moderators', color: '#4CAF50', members: 1, permissions: { admin: false, manageChannels: true, sendMessages: true } },
-        { id: 'everyone', name: '@everyone', color: '#9E9E9E', members: 3, permissions: { admin: false, manageChannels: false, sendMessages: true } }
-      ]);
-    }
-  }, [isOpen, workspace, workspaceId, serverRoles]);
 
   const [editingRole, setEditingRole] = useState<any>(null);
 
@@ -348,12 +343,12 @@ export function ServerSettingsModal({ isOpen, onClose, workspaceId }: ServerSett
 
                         <div className="flex items-center justify-between">
                           <button 
-                            onClick={() => {
+                            onClick={async () => {
                               const exists = roles.find(r => r.id === editingRole.id);
                               if (exists) {
-                                updateRole(workspaceId, editingRole);
+                                await updateRole(workspaceId, editingRole);
                               } else {
-                                setServerRoles(workspaceId, [...roles, editingRole]);
+                                await createRole(workspaceId, editingRole);
                               }
                               setEditingRole(null);
                             }}
@@ -363,8 +358,10 @@ export function ServerSettingsModal({ isOpen, onClose, workspaceId }: ServerSett
                           </button>
 
                           <button 
-                            onClick={() => {
-                              setServerRoles(workspaceId, roles.filter(r => r.id !== editingRole.id));
+                            onClick={async () => {
+                              if (roles.find(r => r.id === editingRole.id)) {
+                                await deleteRole(workspaceId, editingRole.id);
+                              }
                               setEditingRole(null);
                             }}
                             className="px-4 py-2 text-red-500 hover:bg-red-500/10 rounded-lg font-medium transition-colors"
@@ -386,15 +383,15 @@ export function ServerSettingsModal({ isOpen, onClose, workspaceId }: ServerSett
                   </div>
                   
                   <div className="bg-tertiary rounded-lg border border-subtle overflow-visible flex flex-col flex-1">
-                    {(serverMembers[workspaceId] || DEFAULT_MEMBERS).map(member => {
+                    {(serverMembers[workspaceId] || []).map(member => {
                       const memberRolesList = roles.filter(r => (member.roleIds || []).includes(r.id));
                       return (
                         <div key={member.id} className="flex items-center justify-between p-3 border-b border-subtle hover:bg-secondary transition-colors group relative">
                           <div className="flex items-center gap-3">
                             <div className="w-10 h-10 rounded-full bg-accent text-white font-bold flex items-center justify-center">
-                              {member.name.charAt(0).toUpperCase()}
+                              {member.username?.charAt(0)?.toUpperCase() || '?'}
                             </div>
-                            <span className="font-bold text-foreground">{member.name}</span>
+                            <span className="font-bold text-foreground">{member.username}</span>
                           </div>
                           
                           <div className="flex items-center gap-4 relative">

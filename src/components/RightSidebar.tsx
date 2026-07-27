@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { Search } from "lucide-react";
-import { useWorkspaceStore, DEFAULT_MEMBERS } from "@/store/workspaceStore";
+import { useWorkspaceStore } from "@/store/workspaceStore";
 import { UserProfileModal } from "./UserProfileModal";
 import { usePresenceStore } from "@/store/presenceStore";
 import { useUserStore } from "@/store/userStore";
@@ -52,13 +52,13 @@ export function RightSidebar() {
   }
 
   // Fetch members mapped by stable roleId
-  const allMembers = activeWorkspaceId ? (serverMembers[activeWorkspaceId] || DEFAULT_MEMBERS) : DEFAULT_MEMBERS;
+  const allMembers = activeWorkspaceId ? (serverMembers[activeWorkspaceId] || []) : [];
 
   const roles = activeWorkspaceId ? (serverRoles[activeWorkspaceId] || []) : [];
 
   // Filter members based on search query
   const filteredMembers = allMembers.filter(m => 
-    m.name.toLowerCase().includes(searchQuery.toLowerCase())
+    m.username.toLowerCase().includes(searchQuery.toLowerCase())
   );
 
   return (
@@ -95,13 +95,13 @@ export function RightSidebar() {
                 <div className="space-y-1">
                   {roleMembers.map(m => (
                     <MemberRow 
-                      key={m.name} 
-                      name={m.name} 
+                      key={m.id} 
+                      name={m.username} 
                       roleColor={role.color} 
-                      status={m.status} 
-                      subtext={m.subtext} 
+                      status={"online"} 
                       onClick={() => setSelectedUser({ 
                         ...m, 
+                        name: m.username,
                         roleColor: role.color, 
                         // Attach all matching roles for the Profile Modal to render
                         memberRoles: roles.filter(r => m.roleIds.includes(r.id))

@@ -20,20 +20,20 @@ export interface Role {
   id: string;
   name: string;
   color: string;
-  members: number;
   permissions: {
     admin: boolean;
     manageChannels: boolean;
     sendMessages: boolean;
   };
+  priority: number;
 }
 
 export interface WorkspaceMember {
   id: string;
-  username: string;
-  status: string;
-  avatarLetter: string;
-  roles: string[]; // array of role ids
+  user_id: string;
+  username: string; // from auth.users via join or fetch
+  avatar_url?: string;
+  roleIds: string[]; // parsed from role_ids JSONB
 }
 
 interface WorkspaceState {
@@ -43,27 +43,23 @@ interface WorkspaceState {
   activeChannelId: string | null;
   isLoading: boolean;
   
-  // Mock Global State for Roles & Members scoped by Workspace
+  // Real Global State for Roles & Members scoped by Workspace
   serverRoles: Record<string, Role[]>;
-  serverMembers: Record<string, any[]>;
-  setServerRoles: (workspaceId: string, roles: Role[]) => void;
-  updateRole: (workspaceId: string, role: Role) => void;
-  toggleMemberRole: (workspaceId: string, memberId: string, roleId: string) => void;
+  serverMembers: Record<string, WorkspaceMember[]>;
+  
+  fetchRoles: (workspaceId: string) => Promise<void>;
+  createRole: (workspaceId: string, roleData: Partial<Role>) => Promise<Role | null>;
+  updateRole: (workspaceId: string, role: Role) => Promise<void>;
+  deleteRole: (workspaceId: string, roleId: string) => Promise<void>;
+  
+  fetchMembers: (workspaceId: string) => Promise<void>;
+  toggleMemberRole: (workspaceId: string, memberId: string, roleId: string) => Promise<void>;
   
   setActiveWorkspace: (id: string | null) => void;
   setActiveChannel: (id: string) => void;
   fetchWorkspaces: () => Promise<void>;
   fetchChannels: (workspaceId: string) => Promise<void>;
 }
-
-export const DEFAULT_MEMBERS = [
-  { id: '1', name: "Ankan (Creator)", roleIds: ["core"], status: "dnd" as const, subtext: "Debugging UI..." },
-  { id: '2', name: "Aryan", roleIds: ["core"], status: "online" as const },
-  { id: '3', name: "Priya", roleIds: ["mod"], status: "idle" as const },
-  { id: '4', name: "Orsted", roleIds: ["everyone"], status: "online" as const, subtext: "Exploring Synapse" },
-  { id: '5', name: "Luffy", roleIds: ["everyone"], status: "offline" as const },
-  { id: '6', name: "Zoro", roleIds: ["everyone"], status: "dnd" as const, subtext: "Lost again" },
-];
 
 export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   workspaces: [],
@@ -75,43 +71,175 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   serverRoles: {},
   serverMembers: {},
   
-  setServerRoles: (workspaceId, roles) => set((state) => ({ 
-    serverRoles: { ...state.serverRoles, [workspaceId]: roles } 
-  })),
-  
-  updateRole: (workspaceId, updatedRole) => set((state) => {
-    const workspaceRoles = state.serverRoles[workspaceId] || [];
-    return {
+  fetchRoles: async (workspaceId: string) => {
+    const { data, error } = await supabase
+      .from('roles')
+      .select('*')
+      .eq('workspace_id', workspaceId)
+      .order('priority', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching roles:', error);
+      return;
+    }
+
+    set((state) => ({
       serverRoles: {
         ...state.serverRoles,
-        [workspaceId]: workspaceRoles.map(role => role.id === updatedRole.id ? updatedRole : role)
+        [workspaceId]: data as Role[]
       }
-    };
-  }),
+    }));
+  },
 
-  toggleMemberRole: (workspaceId, memberId, roleId) => set((state) => {
-    const members = state.serverMembers[workspaceId] || DEFAULT_MEMBERS;
-    return {
+  createRole: async (workspaceId, roleData) => {
+    const { data, error } = await supabase
+      .from('roles')
+      .insert({
+        workspace_id: workspaceId,
+        name: roleData.name || 'New Role',
+        color: roleData.color || '#99aab5',
+        priority: roleData.priority || 0,
+        permissions: roleData.permissions || { admin: false, manageChannels: false, sendMessages: true }
+      })
+      .select()
+      .single();
+      
+    if (error) {
+      console.error('Error creating role:', error);
+      return null;
+    }
+    
+    // Update local state immediately
+    set((state) => {
+      const currentRoles = state.serverRoles[workspaceId] || [];
+      return {
+        serverRoles: {
+          ...state.serverRoles,
+          [workspaceId]: [...currentRoles, data as Role]
+        }
+      };
+    });
+    
+    return data as Role;
+  },
+  
+  updateRole: async (workspaceId, updatedRole) => {
+    // Optimistic UI update
+    set((state) => {
+      const workspaceRoles = state.serverRoles[workspaceId] || [];
+      return {
+        serverRoles: {
+          ...state.serverRoles,
+          [workspaceId]: workspaceRoles.map(role => role.id === updatedRole.id ? updatedRole : role)
+        }
+      };
+    });
+
+    const { error } = await supabase
+      .from('roles')
+      .update({
+        name: updatedRole.name,
+        color: updatedRole.color,
+        permissions: updatedRole.permissions,
+        priority: updatedRole.priority
+      })
+      .eq('id', updatedRole.id);
+
+    if (error) {
+      console.error('Error updating role:', error);
+      // rollback could be handled here
+    }
+  },
+
+  deleteRole: async (workspaceId, roleId) => {
+    // Optimistic delete
+    set((state) => {
+      const workspaceRoles = state.serverRoles[workspaceId] || [];
+      return {
+        serverRoles: {
+          ...state.serverRoles,
+          [workspaceId]: workspaceRoles.filter(role => role.id !== roleId)
+        }
+      };
+    });
+
+    const { error } = await supabase
+      .from('roles')
+      .delete()
+      .eq('id', roleId);
+
+    if (error) {
+      console.error('Error deleting role:', error);
+    }
+  },
+
+  fetchMembers: async (workspaceId: string) => {
+    // Fetch members and join with auth.users (handled via a profile view or function if needed, but for now we'll do a basic fetch and rely on user metadata)
+    const { data, error } = await supabase
+      .from('workspace_members')
+      .select('*')
+      .eq('workspace_id', workspaceId);
+
+    if (error) {
+      console.error('Error fetching members:', error);
+      return;
+    }
+    
+    // As we can't join auth.users directly via RLS without a secure view, 
+    // we'll mock the username for now using the local state or metadata,
+    // Or we should assume the backend creates a user_profiles table.
+    // For now, map the raw members:
+    const mappedMembers: WorkspaceMember[] = data.map(m => ({
+      id: m.id,
+      user_id: m.user_id,
+      username: "Member", // Will be filled dynamically by UI if possible, or we need a profiles table
+      roleIds: m.role_ids || []
+    }));
+
+    set((state) => ({
       serverMembers: {
         ...state.serverMembers,
-        [workspaceId]: members.map(m => {
-          if (m.id === memberId) {
-            const hasRole = m.roleIds.includes(roleId);
-            const newRoles = hasRole 
-              ? m.roleIds.filter((id: string) => id !== roleId)
-              : [...m.roleIds, roleId];
-            return { ...m, roleIds: newRoles };
-          }
-          return m;
-        })
+        [workspaceId]: mappedMembers
       }
-    };
-  }),
+    }));
+  },
+
+  toggleMemberRole: async (workspaceId, memberId, roleId) => {
+    const state = get();
+    const members = state.serverMembers[workspaceId] || [];
+    const member = members.find(m => m.id === memberId);
+    if (!member) return;
+
+    const hasRole = member.roleIds.includes(roleId);
+    const newRoles = hasRole 
+      ? member.roleIds.filter((id: string) => id !== roleId)
+      : [...member.roleIds, roleId];
+      
+    // Optimistic UI
+    set((state) => ({
+      serverMembers: {
+        ...state.serverMembers,
+        [workspaceId]: members.map(m => m.id === memberId ? { ...m, roleIds: newRoles } : m)
+      }
+    }));
+
+    // Update DB
+    const { error } = await supabase
+      .from('workspace_members')
+      .update({ role_ids: newRoles })
+      .eq('id', memberId);
+
+    if (error) {
+      console.error('Error updating member role:', error);
+    }
+  },
 
   setActiveWorkspace: async (id: string | null) => {
     set({ activeWorkspaceId: id });
     if (id) {
       await get().fetchChannels(id);
+      await get().fetchRoles(id);
+      await get().fetchMembers(id);
     } else {
       set({ channels: [], activeChannelId: null });
     }
@@ -122,7 +250,6 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
   fetchWorkspaces: async () => {
     set({ isLoading: true });
     
-    // Get workspaces the current user is a member of
     const { data: { user } } = await supabase.auth.getUser();
     if (!user) return;
 
@@ -137,7 +264,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       return;
     }
 
-    // @ts-ignore - Supabase join typing is weird
+    // @ts-ignore
     const workspaces: Workspace[] = data?.map(d => d.workspaces) || [];
     
     set({ workspaces, isLoading: false });
@@ -155,7 +282,7 @@ export const useWorkspaceStore = create<WorkspaceState>((set, get) => ({
       .order('created_at', { ascending: true });
 
     if (error) {
-      console.error('Error fetching channels:', JSON.stringify(error, null, 2), error.message, error.details, error.hint);
+      console.error('Error fetching channels:', error);
       return;
     }
 
