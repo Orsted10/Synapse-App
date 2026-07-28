@@ -56,6 +56,12 @@ export function MessageContextMenu({ isOpen, onClose, position, onEdit, onDelete
     onClose();
   };
 
+  // Viewport aware positioning
+  const menuHeight = 350; // approximate max height
+  const adjustedTop = position.y + menuHeight > window.innerHeight 
+    ? Math.max(10, position.y - menuHeight)
+    : position.y;
+
   return (
     <AnimatePresence>
       {isOpen && (
@@ -65,7 +71,7 @@ export function MessageContextMenu({ isOpen, onClose, position, onEdit, onDelete
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
           transition={{ duration: 0.1 }}
-          style={{ top: position.y, left: position.x }}
+          style={{ top: adjustedTop, left: position.x }}
           className="fixed z-50 w-64 bg-secondary/80 backdrop-blur-xl border border-subtle rounded-xl shadow-2xl py-1.5 flex flex-col text-foreground font-medium text-sm"
         >
           {/* Quick Reactions */}

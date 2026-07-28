@@ -17,18 +17,11 @@ export function ThreadDrawer({ message, onClose }: ThreadDrawerProps) {
       {message && (
         <>
           <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            onClick={onClose}
-            className="fixed inset-0 bg-black/40 z-[100] backdrop-blur-[2px]"
-          />
-          <motion.div
-            initial={{ x: "100%", opacity: 0.5 }}
-            animate={{ x: 0, opacity: 1 }}
-            exit={{ x: "100%", opacity: 0.5 }}
-            transition={{ type: "spring", damping: 25, stiffness: 200 }}
-            className="fixed top-0 right-0 h-full w-[450px] bg-background/95 backdrop-blur-3xl border-l border-white/10 z-[101] shadow-2xl flex flex-col pointer-events-auto"
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 400, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ type: "spring", damping: 30, stiffness: 300 }}
+            className="h-full bg-secondary/90 border-l border-white/10 flex flex-col shrink-0 overflow-hidden"
           >
             {/* Header */}
             <div className="h-16 border-b border-white/5 flex items-center justify-between px-6 shrink-0 bg-secondary/30">

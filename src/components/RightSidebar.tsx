@@ -27,24 +27,53 @@ export function RightSidebar() {
           {activeUsersList.length === 0 && (
             <div className="text-sm text-muted text-center pt-10">No one is active right now.</div>
           )}
-          {activeUsersList.map((u, i) => (
-            <div key={i} className="bg-tertiary p-3 rounded-xl border border-subtle relative overflow-hidden group cursor-pointer hover:bg-tertiary-hover transition-colors"
-                 onClick={() => setSelectedUser({ name: u.username, roleColor: "#8b5cf6", status: "online", roleGroup: "Member", subtext: "Online" })}>
-              <div className="absolute top-0 left-0 w-1 h-full bg-accent" />
-              <div className="flex items-center gap-3">
-                <div className="relative">
-                  <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-bold">
-                    {u.username ? u.username.substring(0, 1).toUpperCase() : '?'}
+          {activeUsersList.map((u, i) => {
+            const activities = [
+              { type: 'Playing', name: 'Visual Studio Code', icon: '💻', details: 'Editing page.tsx', time: '45:12 elapsed' },
+              { type: 'Listening to', name: 'Spotify', icon: '🎵', details: 'Synthwave Mix', time: '2:14 / 4:30' },
+              { type: 'Playing', name: 'Cyberpunk 2077', icon: '🎮', details: 'Night City', time: 'In Menus' },
+              null,
+            ];
+            const activity = activities[i % activities.length];
+
+            return (
+              <div key={i} className="bg-tertiary p-3 rounded-xl border border-subtle relative overflow-hidden group cursor-pointer hover:bg-tertiary-hover transition-colors"
+                   onClick={() => setSelectedUser({ name: u.username, roleColor: "#8b5cf6", status: "online", roleGroup: "Member", subtext: "Online" })}>
+                <div className="absolute top-0 left-0 w-1 h-full bg-accent" />
+                <div className="flex items-center gap-3">
+                  <div className="relative">
+                    <div className="w-8 h-8 rounded-full bg-accent text-white flex items-center justify-center font-bold">
+                      {u.username ? u.username.substring(0, 1).toUpperCase() : '?'}
+                    </div>
+                    <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-tertiary rounded-full" />
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-3.5 h-3.5 bg-green-500 border-2 border-tertiary rounded-full" />
+                  <div className="flex flex-col">
+                    <span className="font-bold text-sm">{u.username}{u.userId === user?.id && " (You)"}</span>
+                    <span className="text-xs text-muted">Online</span>
+                  </div>
                 </div>
-                <div className="flex flex-col">
-                  <span className="font-bold text-sm">{u.username}{u.userId === user?.id && " (You)"}</span>
-                  <span className="text-xs text-muted">Online</span>
-                </div>
+
+                {/* Rich Presence Card */}
+                {activity && (
+                  <div className="mt-3 bg-secondary/50 rounded-lg p-2.5 border border-white/5">
+                    <div className="text-[10px] font-bold uppercase tracking-wider text-muted mb-1 flex items-center gap-1">
+                      <span>{activity.type}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 bg-black/40 rounded-md flex items-center justify-center text-lg shrink-0">
+                        {activity.icon}
+                      </div>
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-xs font-bold text-foreground truncate">{activity.name}</span>
+                        <span className="text-[11px] text-muted truncate">{activity.details}</span>
+                        <span className="text-[10px] text-muted truncate mt-0.5">{activity.time}</span>
+                      </div>
+                    </div>
+                  </div>
+                )}
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
         <UserProfileModal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)} user={selectedUser} />
       </div>
@@ -93,21 +122,32 @@ export function RightSidebar() {
               <div key={role.id}>
                 <h3 className="text-xs font-bold text-muted uppercase tracking-wider mb-2">{role.name} — {roleMembers.length}</h3>
                 <div className="space-y-1">
-                  {roleMembers.map(m => (
-                    <MemberRow 
-                      key={m.id} 
-                      name={m.username} 
-                      roleColor={role.color} 
-                      status={"online"} 
-                      onClick={() => setSelectedUser({ 
-                        ...m, 
-                        name: m.username,
-                        roleColor: role.color, 
-                        // Attach all matching roles for the Profile Modal to render
-                        memberRoles: roles.filter(r => m.roleIds.includes(r.id))
-                      })} 
-                    />
-                  ))}
+                  {roleMembers.map((m, i) => {
+                    const activities = [
+                      { type: 'Playing', name: 'Visual Studio Code', icon: '💻', details: 'Editing page.tsx', time: '45:12 elapsed' },
+                      { type: 'Listening to', name: 'Spotify', icon: '🎵', details: 'Synthwave Mix', time: '2:14 / 4:30' },
+                      { type: 'Playing', name: 'Cyberpunk 2077', icon: '🎮', details: 'Night City', time: 'In Menus' },
+                      null,
+                    ];
+                    const activity = activities[i % activities.length];
+                    
+                    return (
+                      <MemberRow 
+                        key={m.id} 
+                        name={m.username} 
+                        roleColor={role.color} 
+                        status={"online"} 
+                        activity={activity}
+                        onClick={() => setSelectedUser({ 
+                          ...m, 
+                          name: m.username,
+                          roleColor: role.color, 
+                          // Attach all matching roles for the Profile Modal to render
+                          memberRoles: roles.filter(r => m.roleIds.includes(r.id))
+                        })} 
+                      />
+                    );
+                  })}
                 </div>
               </div>
             );
@@ -126,7 +166,15 @@ export function RightSidebar() {
   );
 }
 
-function MemberRow({ name, roleColor, status, subtext, onClick }: { name: string, roleColor: string, status: 'online' | 'idle' | 'dnd' | 'offline', subtext?: string, onClick?: () => void }) {
+interface Activity {
+  type: string;
+  name: string;
+  icon: string;
+  details: string;
+  time: string;
+}
+
+function MemberRow({ name, roleColor, status, subtext, activity, onClick }: { name: string, roleColor: string, status: 'online' | 'idle' | 'dnd' | 'offline', subtext?: string, activity?: Activity | null, onClick?: () => void }) {
   const getStatusColor = () => {
     switch(status) {
       case 'online': return 'bg-green-500';
@@ -137,17 +185,37 @@ function MemberRow({ name, roleColor, status, subtext, onClick }: { name: string
   };
 
   return (
-    <div onClick={onClick} className="flex items-center gap-3 p-2 rounded-lg hover:bg-tertiary cursor-pointer transition-colors group">
-      <div className="relative shrink-0">
-        <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shadow-sm" style={{ backgroundColor: roleColor }}>
-          {name.charAt(0)}
+    <div onClick={onClick} className="flex flex-col p-2 rounded-lg hover:bg-tertiary cursor-pointer transition-colors group">
+      <div className="flex items-center gap-3">
+        <div className="relative shrink-0">
+          <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shadow-sm" style={{ backgroundColor: roleColor }}>
+            {name.charAt(0)}
+          </div>
+          <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 ${getStatusColor()} border-2 border-secondary group-hover:border-tertiary transition-colors rounded-full`} />
         </div>
-        <div className={`absolute -bottom-0.5 -right-0.5 w-3.5 h-3.5 ${getStatusColor()} border-2 border-secondary group-hover:border-tertiary transition-colors rounded-full`} />
+        <div className="flex flex-col overflow-hidden">
+          <span className="font-bold text-sm truncate" style={{ color: roleColor }}>{name}</span>
+          {subtext && <span className="text-[11px] text-muted truncate">{subtext}</span>}
+        </div>
       </div>
-      <div className="flex flex-col overflow-hidden">
-        <span className="font-bold text-sm truncate" style={{ color: roleColor }}>{name}</span>
-        {subtext && <span className="text-[11px] text-muted truncate">{subtext}</span>}
-      </div>
+      
+      {activity && (
+        <div className="mt-3 bg-secondary/50 rounded-lg p-2.5 border border-white/5 ml-11">
+          <div className="text-[10px] font-bold uppercase tracking-wider text-muted mb-1 flex items-center gap-1">
+            <span>{activity.type}</span>
+          </div>
+          <div className="flex items-start gap-2">
+            <div className="w-8 h-8 bg-black/40 rounded-md flex items-center justify-center text-lg shrink-0">
+              {activity.icon}
+            </div>
+            <div className="flex flex-col min-w-0">
+              <span className="text-xs font-bold text-foreground truncate">{activity.name}</span>
+              <span className="text-[11px] text-muted truncate">{activity.details}</span>
+              <span className="text-[10px] text-muted truncate mt-0.5">{activity.time}</span>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

@@ -25,6 +25,8 @@ import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from "@/lib/supabase";
 import { toast } from "sonner";
+import { CodeBlock } from "@/components/CodeBlock";
+import { VoiceChannel } from "@/components/VoiceChannel";
 
 export default function Home() {
   const { activeWorkspaceId, activeChannelId, channels, workspaces } = useWorkspaceStore();
@@ -293,34 +295,12 @@ export default function Home() {
       </div>
 
       {activeChannel?.type === 'voice' ? (
-        <div className="flex-1 flex flex-col items-center justify-center bg-secondary/30">
-          <div className="bg-tertiary p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-md w-full border border-subtle relative overflow-hidden">
-            <div className="absolute inset-0 bg-noise mix-blend-overlay opacity-30 pointer-events-none" />
-            <div className="w-24 h-24 bg-accent/10 rounded-full flex items-end justify-center mb-6 shadow-[0_0_50px_rgba(var(--accent),0.2)] overflow-hidden gap-1 pb-4 relative z-10">
-              {[...Array(5)].map((_, i) => (
-                <motion.div 
-                  key={i} 
-                  animate={{ height: [20, 60, 30, 70, 20] }} 
-                  transition={{ repeat: Infinity, duration: 1 + i * 0.2, ease: "easeInOut" }}
-                  className="w-2 bg-accent rounded-full" 
-                />
-              ))}
-            </div>
-            <h2 className="text-2xl font-bold mb-2 text-foreground relative z-10">
-              <ScrambleText text={`# ${activeChannel.name}`} />
-            </h2>
-            <p className="text-muted text-center mb-8">
-              Voice channels are currently in development. You will be able to connect and talk with your friends here soon!
-            </p>
-            <button className="bg-accent text-white px-8 py-3 rounded-full font-bold hover:bg-accent-hover transition-colors shadow-lg shadow-accent/20">
-              Join Voice
-            </button>
-          </div>
-        </div>
+        <VoiceChannel channelName={activeChannel.name} />
       ) : (
-        <>
+        <div className="flex-1 flex flex-row overflow-hidden w-full relative">
+          <div className="flex-1 flex flex-col min-w-0 h-full">
           {/* Message Log Area */}
-          <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar flex flex-col gap-6 relative overscroll-contain">
+          <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar flex flex-col gap-6 relative overscroll-contain chat-fade-mask pt-[80px]">
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={activeChannel?.id}
@@ -332,6 +312,8 @@ export default function Home() {
                 style={{ transformStyle: "preserve-3d", perspective: 1000 }}
               >
             {messages.map((msg, index) => {
+              const prevMsg = index > 0 ? messages[index - 1] : null;
+              const isGrouped = prevMsg && prevMsg.user_id === msg.user_id && (new Date(msg.created_at).getTime() - new Date(prevMsg.created_at).getTime() < 5 * 60 * 1000);
               const userColor = getColorForUser(msg.user?.username || '');
               return (
               <motion.div 
@@ -347,45 +329,64 @@ export default function Home() {
                 }}
                 key={msg.id} 
                 onContextMenu={(e) => handleContextMenu(e, msg)}
-                className={`group relative hover:bg-white/5 hover:backdrop-blur-md -mx-4 rounded-2xl transition-all duration-300 ${contextMenu.isOpen && contextMenu.msg?.id === msg.id ? 'bg-white/5 backdrop-blur-md shadow-lg' : ''}`}
+                className={`group relative hover:bg-white/5 hover:backdrop-blur-md -mx-4 rounded-2xl transition-all duration-300 ${contextMenu.isOpen && contextMenu.msg?.id === msg.id ? 'bg-white/5 backdrop-blur-md shadow-lg' : ''} ${isGrouped ? 'mt-[-16px]' : ''}`}
               >
+                {isGrouped && (
+                  <div className="absolute left-[36px] top-[-16px] bottom-0 w-[2px] bg-gradient-to-b from-transparent via-white/10 to-transparent z-0 group-hover:via-accent/30 transition-colors" />
+                )}
                 <TiltCard className="w-full h-full rounded-[inherit]">
-                  <SpotlightCard className="w-full h-full flex gap-4 px-4 py-2 rounded-[inherit]">
+                  <SpotlightCard className={`w-full h-full flex gap-4 px-4 ${isGrouped ? 'py-1' : 'py-2'} rounded-[inherit]`}>
                   {/* Avatar */}
-                  <div 
-                    onClick={() => handleUserClick(msg.user)}
-                    className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-bold text-white shadow-sm cursor-pointer hover:scale-110 transition-transform mt-1 z-10 relative"
-                    style={{
-                      backgroundColor: userColor,
-                      boxShadow: `0 0 20px ${userColor}60, inset 0 0 10px rgba(255,255,255,0.2)`
-                    }}
-                  >
-                    {msg.user?.username ? msg.user.username.substring(0, 1).toUpperCase() : '?'}
-                  </div>
+                  {isGrouped ? (
+                    <div className="w-10 shrink-0 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-muted font-bold transition-opacity">
+                      {new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                    </div>
+                  ) : (
+                    <div 
+                      onClick={() => handleUserClick(msg.user)}
+                      className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-bold text-white shadow-sm cursor-pointer hover:scale-110 transition-transform mt-1 z-10 relative"
+                      style={{
+                        backgroundColor: userColor,
+                        boxShadow: `0 0 20px ${userColor}60, inset 0 0 10px rgba(255,255,255,0.2)`
+                      }}
+                    >
+                      {msg.user?.username ? msg.user.username.substring(0, 1).toUpperCase() : '?'}
+                    </div>
+                  )}
 
                   <div className="flex flex-col w-full max-w-[85%] z-10">
                   {/* Message Header */}
-                  <div className="flex items-center gap-2 mb-1">
-                    <span 
-                      onClick={() => handleUserClick(msg.user)}
-                      className="font-bold text-[15px] hover:underline cursor-pointer tracking-wide"
-                      style={{ color: userColor }}
-                    >
-                      <StaggerText text={msg.user?.username || 'Unknown User'} />
-                    </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent font-semibold tracking-wide border border-accent/20">
-                      {msg.user?.role || 'Member'}
-                    </span>
-                    <span className="text-xs text-muted ml-1">
-                      {new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                    </span>
-                    {msg.is_pinned && (
-                      <span className="text-[10px] text-accent font-bold uppercase tracking-wider flex items-center gap-1 ml-1 bg-accent/10 px-1.5 py-0.5 rounded">
+                  {!isGrouped && (
+                    <div className="flex items-center gap-2 mb-1">
+                      <span 
+                        onClick={() => handleUserClick(msg.user)}
+                        className={`font-bold text-[15px] hover:underline cursor-pointer tracking-wide ${msg.user?.role?.toLowerCase() === 'admin' ? 'role-admin' : msg.user?.role?.toLowerCase() === 'mod' ? 'role-mod' : msg.user?.role?.toLowerCase() === 'vip' ? 'role-vip' : ''}`}
+                        style={{ color: !['admin', 'mod', 'vip'].includes(msg.user?.role?.toLowerCase() || '') ? userColor : undefined }}
+                      >
+                        <StaggerText text={msg.user?.username || 'Unknown User'} />
+                      </span>
+                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tracking-wide border ${msg.user?.role?.toLowerCase() === 'admin' ? 'bg-[#f6d365]/10 text-[#f6d365] border-[#f6d365]/20' : msg.user?.role?.toLowerCase() === 'mod' ? 'bg-[#a18cd1]/10 text-[#a18cd1] border-[#a18cd1]/20' : 'bg-accent/10 text-accent border-accent/20'}`}>
+                        {msg.user?.role || 'Member'}
+                      </span>
+                      <span className="text-xs text-muted ml-1">
+                        {new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                      </span>
+                      {msg.is_pinned && (
+                        <span className="text-[10px] text-accent font-bold uppercase tracking-wider flex items-center gap-1 ml-1 bg-accent/10 px-1.5 py-0.5 rounded">
+                          📌 Pinned
+                        </span>
+                      )}
+                    </div>
+                  )}  
+                  
+                  {isGrouped && msg.is_pinned && (
+                    <div className="flex mb-1">
+                      <span className="text-[10px] text-accent font-bold uppercase tracking-wider flex items-center gap-1 bg-accent/10 px-1.5 py-0.5 rounded">
                         📌 Pinned
                       </span>
-                    )}
-                  </div>
-                  
+                    </div>
+                  )}
+
                   {/* Message Content */}
                   {editingMessageId === msg.id ? (
                     <div className="mt-1 relative">
@@ -408,10 +409,10 @@ export default function Home() {
                         components={{
                           p: ({node, ...props}) => <p className="mb-1 last:mb-0 inline-block" {...props} />,
                           a: ({node, ...props}) => <a className="text-accent hover:underline" target="_blank" rel="noreferrer" {...props} />,
-                          code: ({node, inline, ...props}: any) => 
+                          code: ({node, inline, className, children, ...props}: any) => 
                             inline 
-                              ? <code className="bg-secondary px-1.5 py-0.5 rounded-md text-[13px] font-mono text-accent" {...props} />
-                              : <pre className="bg-secondary p-3 rounded-md my-2 overflow-x-auto"><code className="text-[13px] font-mono" {...props} /></pre>,
+                              ? <code className="bg-secondary px-1.5 py-0.5 rounded-md text-[13px] font-mono text-accent" {...props}>{children}</code>
+                              : <CodeBlock className={className}>{children}</CodeBlock>,
                           ul: ({node, ...props}) => <ul className="list-disc ml-4 my-1" {...props} />,
                           ol: ({node, ...props}) => <ol className="list-decimal ml-4 my-1" {...props} />,
                           blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-subtle pl-3 my-1 italic text-muted" {...props} />,
@@ -426,21 +427,25 @@ export default function Home() {
                   {/* Reactions Area */}
                   {msg.reactions && Object.keys(msg.reactions).length > 0 && (
                     <div className="flex flex-wrap gap-1.5 mt-1.5">
-                      {Object.entries(msg.reactions).map(([emoji, users]) => {
+                      {Object.entries(msg.reactions).map(([emoji, users]: [string, any]) => {
                         const hasReacted = user && users.includes(user.id);
+                        const count = users.length;
                         return (
-                          <button
+                          <motion.button
                             key={emoji}
+                            whileHover={{ scale: 1.1 }}
+                            whileTap={{ scale: 0.9 }}
+                            animate={{ scale: count > 3 ? Math.min(1 + (count - 3) * 0.1, 1.4) : 1 }}
                             onClick={() => user && toggleReaction(msg.id, emoji, user.id)}
                             className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[6px] border ${
                               hasReacted 
                                 ? 'bg-accent/20 border-accent/50 text-accent' 
                                 : 'bg-secondary/50 border-subtle text-muted hover:bg-tertiary hover:border-subtle/80 hover:text-foreground'
-                            } transition-colors text-[13px] font-medium`}
+                            } transition-colors text-[13px] font-medium ${count > 3 ? 'shadow-[0_0_15px_rgba(var(--accent),0.3)]' : ''}`}
                           >
                             <span>{emoji}</span>
-                            <span>{users.length}</span>
-                          </button>
+                            <span>{count}</span>
+                          </motion.button>
                         );
                       })}
                     </div>
@@ -541,12 +546,23 @@ export default function Home() {
                 >
                   <Paperclip size={20} />
                 </button>
-                <input
-                  type="text"
+                <textarea
                   value={inputValue}
                   onChange={handleInputChange}
+                  onInput={(e) => {
+                    const target = e.target as HTMLTextAreaElement;
+                    target.style.height = 'auto';
+                    target.style.height = Math.min(target.scrollHeight, 200) + 'px';
+                  }}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter' && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage(e as any);
+                    }
+                  }}
                   placeholder={`Message #${activeChannel ? activeChannel.name : 'channel'}`}
-                  className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted"
+                  className="flex-1 bg-transparent border-none outline-none text-foreground placeholder:text-muted resize-none overflow-y-auto min-h-[24px] max-h-[200px] leading-relaxed custom-scrollbar py-1"
+                  rows={1}
                   autoFocus
                   onFocus={() => setIsInputFocused(true)}
                   onBlur={() => setIsInputFocused(false)}
@@ -575,8 +591,11 @@ export default function Home() {
               </div>
             </form>
           </div>
-        </>
-      )}
+          <ThreadDrawer
+            message={activeThreadMsg}
+            onClose={() => setActiveThreadMsg(null)}
+          />
+        </div>
       </AppLayout>
 
       <UserProfileModal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)} user={selectedUser} />
@@ -614,10 +633,6 @@ export default function Home() {
         isOpen={isPinnedDrawerOpen} 
         onClose={() => setIsPinnedDrawerOpen(false)} 
         pinnedMessages={messages.filter(m => m.is_pinned)} 
-      />
-      <ThreadDrawer
-        message={activeThreadMsg}
-        onClose={() => setActiveThreadMsg(null)}
       />
     </>
   );

@@ -8,6 +8,7 @@ import { CreateWorkspaceModal } from "./CreateWorkspaceModal";
 import { SettingsModal } from "./SettingsModal";
 import { ServerSettingsModal } from "./ServerSettingsModal";
 import { CreateChannelModal } from "./CreateChannelModal";
+import { CommandPalette } from "./CommandPalette";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useUserStore } from "@/store/userStore";
 import { usePresenceStore } from "@/store/presenceStore";
@@ -39,7 +40,19 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isServerSettingsModalOpen, setIsServerSettingsModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
+  const [isCommandPaletteOpen, setIsCommandPaletteOpen] = useState(false);
   const { playHover, playClick } = useHaptics();
+
+  useEffect(() => {
+    const handleOpenCommandPalette = () => setIsCommandPaletteOpen(true);
+    const handleOpenSettings = () => setIsSettingsModalOpen(true);
+    document.addEventListener('open-command-palette', handleOpenCommandPalette);
+    document.addEventListener('open-settings', handleOpenSettings);
+    return () => {
+      document.removeEventListener('open-command-palette', handleOpenCommandPalette);
+      document.removeEventListener('open-settings', handleOpenSettings);
+    };
+  }, []);
 
   const scrollRef = React.useRef<HTMLDivElement>(null);
   const { scrollY } = useScroll({ container: scrollRef });
@@ -264,7 +277,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   {profile.username ? profile.username.substring(0, 1).toUpperCase() : '?'}
                 </div>
                 <div className="flex flex-col truncate">
-                  <span className="font-bold text-[14px] leading-tight truncate">{profile.username}</span>
+                  <span className={`font-bold text-[14px] leading-tight truncate ${(profile as any).role?.toLowerCase() === 'admin' ? 'role-admin' : (profile as any).role?.toLowerCase() === 'mod' ? 'role-mod' : (profile as any).role?.toLowerCase() === 'vip' ? 'role-vip' : ''}`}>{profile.username}</span>
                   <span className="text-xs text-muted leading-tight truncate">{profile.status}</span>
                 </div>
               </div>
@@ -371,6 +384,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           workspaceId={activeWorkspaceId}
         />
       )}
+
+      <CommandPalette 
+        isOpen={isCommandPaletteOpen} 
+        onClose={() => setIsCommandPaletteOpen(false)} 
+      />
 
       </div>
       </>
