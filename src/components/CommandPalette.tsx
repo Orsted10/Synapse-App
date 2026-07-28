@@ -77,8 +77,7 @@ export function CommandPalette({ isOpen, onClose }: CommandPaletteProps) {
       },
       showAlways: 'settings'.includes(query.toLowerCase())
     }
-  ].filter(item => query === '' || item.showAlways || item.title.toLowerCase().includes(query.toLowerCase()));
-
+  ].filter(item => query === '' || ('showAlways' in item && item.showAlways) || item.title.toLowerCase().includes(query.toLowerCase()));
   // Keyboard navigation
   useEffect(() => {
     const handleNavigation = (e: KeyboardEvent) => {

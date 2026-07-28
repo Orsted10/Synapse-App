@@ -18,7 +18,8 @@ export function CodeBlock({ children, className }: CodeBlockProps) {
     } else if (Array.isArray(children)) {
       text = children.map(child => (typeof child === 'string' ? child : '')).join('');
     } else if (React.isValidElement(children)) {
-      text = children.props.children || '';
+      const element = children as React.ReactElement<any>;
+      text = String(element.props.children || '');
     }
     
     navigator.clipboard.writeText(text);

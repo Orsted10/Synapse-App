@@ -85,7 +85,7 @@ export default function Home() {
   const activeChannel = channels.find(c => c.id === activeChannelId);
   const activeTypingUsers = activeChannelId ? (typingUsers[activeChannelId] || []).filter(name => name !== profile?.username) : [];
 
-  const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
     setInputValue(e.target.value);
     if (activeChannelId && profile?.username) {
       setTyping(activeChannelId, profile.username, e.target.value.length > 0);
@@ -591,11 +591,13 @@ export default function Home() {
               </div>
             </form>
           </div>
+          </div>
           <ThreadDrawer
             message={activeThreadMsg}
             onClose={() => setActiveThreadMsg(null)}
           />
         </div>
+      )}
       </AppLayout>
 
       <UserProfileModal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)} user={selectedUser} />

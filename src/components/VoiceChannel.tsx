@@ -8,7 +8,7 @@ interface VoiceChannelProps {
 }
 
 export function VoiceChannel({ channelName }: VoiceChannelProps) {
-  const { user } = useUserStore();
+  const { user, profile } = useUserStore();
   const [isJoined, setIsJoined] = useState(false);
   const [isMuted, setIsMuted] = useState(false);
   const [isDeafened, setIsDeafened] = useState(false);
@@ -16,7 +16,7 @@ export function VoiceChannel({ channelName }: VoiceChannelProps) {
   // Mock participants
   const participants = isJoined 
     ? [
-        { id: user?.id, name: user?.username || 'You', isSpeaking: !isMuted, avatar: user?.username?.charAt(0) || 'Y' },
+        { id: user?.id, name: profile?.username || 'You', isSpeaking: !isMuted, avatar: profile?.username?.charAt(0) || 'Y' },
         { id: '2', name: 'Alice', isSpeaking: true, avatar: 'A' },
         { id: '3', name: 'Bob', isSpeaking: false, avatar: 'B' },
         { id: '4', name: 'Charlie', isSpeaking: false, avatar: 'C' },
