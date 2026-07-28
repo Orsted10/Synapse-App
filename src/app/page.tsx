@@ -34,7 +34,7 @@ export default function Home() {
   const { activeWorkspaceId, activeChannelId, channels, workspaces } = useWorkspaceStore();
   const { messages, fetchMessages, sendMessage, updateMessage, deleteMessage, toggleReaction, subscribeToMessages, unsubscribeFromMessages } = useMessageStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLTextAreaElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const emojiButtonRef = useRef<HTMLButtonElement>(null);
 
