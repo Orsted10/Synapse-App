@@ -17,6 +17,7 @@ import { Toaster } from "sonner";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { CustomCursor } from "./CustomCursor";
 import { TiltCard } from "./TiltCard";
+import { Magnetic } from "./Magnetic";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -62,6 +63,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <TooltipProvider delayDuration={200}>
       <div className="h-screen w-screen bg-aurora text-foreground overflow-hidden flex transition-colors duration-500 relative">
+        <div className="bg-noise absolute inset-0 pointer-events-none mix-blend-overlay opacity-40 z-50"></div>
         <CustomCursor />
         <Toaster theme="system" position="bottom-right" richColors />
         
@@ -69,6 +71,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <div className="w-[72px] h-full glass-panel-heavy border-r border-subtle/50 flex flex-col items-center py-4 gap-3 z-20 shrink-0">
         {/* Home Button */}
         <Tooltip content="Direct Messages" side="right">
+          <Magnetic>
           <TiltCard
             onClick={() => setActiveWorkspace(null)}
             className={`w-12 h-12 flex items-center justify-center transition-all duration-300 group relative ${
@@ -89,12 +92,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             )}
             <div className={`absolute -left-3 top-3.5 w-2 h-5 bg-foreground/50 rounded-r-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${!activeWorkspaceId ? 'hidden' : ''}`} />
           </TiltCard>
+          </Magnetic>
         </Tooltip>
 
         <div className="w-8 h-[2px] bg-subtle/50 rounded-full mx-auto" />
 
         {workspaces.map((ws) => (
           <Tooltip key={ws.id} content={ws.name} side="right">
+            <Magnetic>
             <TiltCard
               onClick={() => setActiveWorkspace(ws.id)}
               className={`w-12 h-12 flex items-center justify-center font-bold text-sm transition-all duration-300 premium-shadow group relative ${
@@ -117,11 +122,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               )}
               <div className={`absolute -left-3 top-3.5 w-2 h-5 bg-foreground/50 rounded-r-full transition-all duration-300 opacity-0 group-hover:opacity-100 ${activeWorkspaceId === ws.id ? 'hidden' : ''}`} />
             </TiltCard>
+            </Magnetic>
           </Tooltip>
         ))}
         
         {/* Add Workspace Button */}
         <Tooltip content="Add a Server" side="right">
+          <Magnetic pullFactor={0.5}>
           <button 
             onClick={() => setIsCreateModalOpen(true)}
             className="w-12 h-12 rounded-[16px] bg-secondary/50 text-green-500 hover:bg-green-500 hover:text-white flex items-center justify-center transition-all duration-300 group relative glowing-border"
@@ -129,6 +136,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Plus size={24} />
             <div className="absolute -left-3 w-2 h-5 bg-foreground/50 rounded-r-full transition-all duration-300 opacity-0 group-hover:opacity-100" />
           </button>
+          </Magnetic>
         </Tooltip>
 
         {/* Bottom actions (Theme) */}

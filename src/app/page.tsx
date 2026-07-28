@@ -12,6 +12,8 @@ import { UserProfileModal } from "@/components/UserProfileModal";
 import { DeleteMessageModal } from "@/components/DeleteMessageModal";
 import { MessageContextMenu } from "@/components/MessageContextMenu";
 import { TiltCard } from "@/components/TiltCard";
+import { SpotlightCard } from "@/components/SpotlightCard";
+import { Magnetic } from "@/components/Magnetic";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from "@/lib/supabase";
@@ -270,7 +272,8 @@ export default function Home() {
                 onContextMenu={(e) => handleContextMenu(e, msg)}
                 className={`group relative hover:bg-white/5 hover:backdrop-blur-md -mx-4 rounded-2xl transition-all duration-300 ${contextMenu.isOpen && contextMenu.msg?.id === msg.id ? 'bg-white/5 backdrop-blur-md shadow-lg' : ''}`}
               >
-                <TiltCard className="w-full h-full flex gap-4 px-4 py-2">
+                <TiltCard className="w-full h-full rounded-[inherit]">
+                  <SpotlightCard className="w-full h-full flex gap-4 px-4 py-2 rounded-[inherit]">
                   {/* Avatar */}
                   <div 
                     onClick={() => handleUserClick(msg.user)}
@@ -386,6 +389,7 @@ export default function Home() {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                   </button>
                 </div>
+                  </SpotlightCard>
                 </TiltCard>
               </motion.div>
             ))}
@@ -453,13 +457,16 @@ export default function Home() {
                   >
                     <Smile size={20} />
                   </button>
-                  <button 
+                  <Magnetic>
+                  <motion.button 
                     type="submit" 
+                    whileTap={{ scale: 0.9 }}
                     disabled={!inputValue.trim() || !activeChannelId}
-                    className="text-white bg-accent hover:bg-accent-hover transition-colors p-1.5 rounded-lg disabled:opacity-50 disabled:hover:bg-accent"
+                    className="text-white bg-accent hover:bg-accent-hover transition-colors p-1.5 rounded-lg disabled:opacity-50 disabled:hover:bg-accent flex items-center justify-center"
                   >
                     <Send size={18} />
-                  </button>
+                  </motion.button>
+                  </Magnetic>
                 </div>
               </motion.div>
             </form>
