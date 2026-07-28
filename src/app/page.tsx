@@ -18,6 +18,7 @@ import { CustomCursor } from "@/components/CustomCursor";
 import { ScrambleText } from "@/components/ScrambleText";
 import { StaggerText } from "@/components/StaggerText";
 import { PinnedDrawer } from "@/components/PinnedDrawer";
+import { TypingIndicator } from "@/components/TypingIndicator";
 import { SlashCommands } from "@/components/SlashCommands";
 import { ThreadDrawer } from "@/components/ThreadDrawer";
 import { EmojiPickerPopover } from "@/components/EmojiPickerPopover";
