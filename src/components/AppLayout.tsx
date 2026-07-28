@@ -20,6 +20,7 @@ import { Cursor } from "./Cursor";
 import { TiltCard } from "./TiltCard";
 import { Magnetic } from "./Magnetic";
 import { useHaptics } from "@/hooks/useHaptics";
+import { motion, useScroll, useTransform } from "framer-motion";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -39,6 +40,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isServerSettingsModalOpen, setIsServerSettingsModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
   const { playHover, playClick } = useHaptics();
+
+  const scrollRef = React.useRef<HTMLDivElement>(null);
+  const { scrollY } = useScroll({ container: scrollRef });
+  const bannerY = useTransform(scrollY, [0, 200], [0, 100]);
+  const bannerOpacity = useTransform(scrollY, [0, 100], [1, 0]);
 
   const getAmbientColor = (id: string) => {
     if (!id) return 'transparent';
@@ -190,17 +196,30 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         {/* Inner Sidebar (Channels) - Only show if in a workspace */}
         {activeWorkspaceId && (
           <div className="w-[240px] h-[calc(100vh-32px)] my-auto mr-4 rounded-[24px] glass-panel border border-subtle/50 flex flex-col shrink-0 relative z-10 overflow-hidden shadow-2xl">
-            {/* Workspace Header */}
+            {/* Workspace Header (Sticky) */}
             <div 
               onClick={() => setIsServerSettingsModalOpen(true)}
-              className="h-14 border-b border-subtle/50 flex items-center justify-between px-4 font-bold hover:bg-white/5 cursor-pointer transition-colors shadow-sm z-10 shrink-0 group"
+              className="h-14 border-b border-white/10 flex items-center justify-between px-4 font-bold hover:bg-white/5 cursor-pointer transition-colors shadow-sm z-20 shrink-0 group bg-background/50 backdrop-blur-md"
             >
               <span className="truncate">{workspaces.find(w => w.id === activeWorkspaceId)?.name}</span>
               <Settings size={16} className="text-muted group-hover:text-foreground transition-colors" />
             </div>
 
-            <div className="flex-1 overflow-y-auto custom-scrollbar p-2">
-              <div className="mb-2 px-2 flex items-center justify-between text-muted mt-2">
+            <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar relative">
+              {/* Parallax Banner inside scroll container */}
+              <motion.div 
+                style={{ y: bannerY, opacity: bannerOpacity }}
+                className="absolute top-0 left-0 w-full h-[120px] bg-cover bg-center pointer-events-none"
+              >
+                <div 
+                  className="absolute inset-0 opacity-40 mix-blend-overlay"
+                  style={{ backgroundImage: `url(https://picsum.photos/seed/${activeWorkspaceId}/400/200)` }}
+                />
+                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/90" />
+              </motion.div>
+              
+              <div className="relative z-10 p-2 pt-[60px]">
+                <div className="mb-2 px-2 flex items-center justify-between text-muted mt-2">
                 <span className="text-xs font-bold uppercase tracking-wider">Text Channels</span>
                 <button 
                   onClick={() => setIsCreateChannelModalOpen(true)}
@@ -231,6 +250,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                   </TiltCard>
                 );
               })}
+              </div>
             </div>
 
             {/* Profile Block - ALWAYS visible at the bottom of the inner sidebar */}

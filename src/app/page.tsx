@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/AppLayout";
-import { Hash, Send, Smile, Paperclip, Users, MessageSquare, Volume2, Pin } from "lucide-react";
+import { Hash, Send, Smile, Paperclip, Users, MessageSquare, Volume2, Pin, CornerDownRight } from "lucide-react";
 import { useMessageStore } from "@/store/messageStore";
 import { useWorkspaceStore } from "@/store/workspaceStore";
 import { useUserStore } from "@/store/userStore";
@@ -14,8 +14,13 @@ import { MessageContextMenu } from "@/components/MessageContextMenu";
 import { TiltCard } from "@/components/TiltCard";
 import { SpotlightCard } from "@/components/SpotlightCard";
 import { Magnetic } from "@/components/Magnetic";
+import { CustomCursor } from "@/components/CustomCursor";
 import { ScrambleText } from "@/components/ScrambleText";
 import { StaggerText } from "@/components/StaggerText";
+import { PinnedDrawer } from "@/components/PinnedDrawer";
+import { TypingIndicator } from "@/components/TypingIndicator";
+import { SlashCommands } from "@/components/SlashCommands";
+import { ThreadDrawer } from "@/components/ThreadDrawer";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from "@/lib/supabase";
@@ -25,6 +30,8 @@ export default function Home() {
   const { activeWorkspaceId, activeChannelId, channels, workspaces } = useWorkspaceStore();
   const { messages, fetchMessages, sendMessage, updateMessage, deleteMessage, toggleReaction, subscribeToMessages, unsubscribeFromMessages } = useMessageStore();
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const inputRef = useRef<HTMLInputElement>(null);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const [inputValue, setInputValue] = useState("");
   const [isInputFocused, setIsInputFocused] = useState(false);
@@ -35,10 +42,25 @@ export default function Home() {
   const { typingUsers, setTyping } = usePresenceStore();
 
   // Modal and Context Menu State
+  const [activeThreadMsg, setActiveThreadMsg] = useState<any>(null);
   const [deleteModalMessage, setDeleteModalMessage] = useState<any>(null);
+  const [isPinnedDrawerOpen, setIsPinnedDrawerOpen] = useState(false);
+  const [mockTypingUsers, setMockTypingUsers] = useState<string[]>([]);
   const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; msg: any }>({ 
     isOpen: false, x: 0, y: 0, msg: null 
   });
+
+  useEffect(() => {
+    // Mock typing indicators for functional aesthetics demo
+    if (!activeChannelId) return;
+    const interval = setInterval(() => {
+      if (Math.random() > 0.7) {
+        setMockTypingUsers(["Alice"]);
+        setTimeout(() => setMockTypingUsers([]), 3000);
+      }
+    }, 8000);
+    return () => clearInterval(interval);
+  }, [activeChannelId]);
 
   useEffect(() => {
     if (activeChannelId) {
@@ -49,6 +71,14 @@ export default function Home() {
       unsubscribeFromMessages();
     };
   }, [activeChannelId, fetchMessages, subscribeToMessages, unsubscribeFromMessages]);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [messages]);
 
   const activeChannel = channels.find(c => c.id === activeChannelId);
   const activeTypingUsers = activeChannelId ? (typingUsers[activeChannelId] || []).filter(name => name !== profile?.username) : [];
@@ -133,6 +163,12 @@ export default function Home() {
           <h2 className="text-xl font-bold text-foreground mb-2">Your neural network is empty.</h2>
           <p className="text-muted max-w-md">Click the + button on the left sidebar to create a Synapse Server and start connecting with others!</p>
         </div>
+
+        <PinnedDrawer 
+          isOpen={isPinnedDrawerOpen} 
+          onClose={() => setIsPinnedDrawerOpen(false)} 
+          pinnedMessages={messages.filter(m => m.is_pinned)} 
+        />
       </AppLayout>
     );
   }
@@ -246,7 +282,7 @@ export default function Home() {
         </div>
         {activeChannel && (
           <div className="flex items-center gap-4 text-muted">
-            <button className="hover:text-foreground transition-colors" title="Pinned Messages" onClick={() => toast.info('Pinned Messages Drawer coming in Phase 10 part 2!')}>
+            <button className="hover:text-foreground transition-colors" title="Pinned Messages" onClick={() => setIsPinnedDrawerOpen(true)}>
               <Pin size={20} />
             </button>
             <button className="hover:text-foreground transition-colors" title="Member List">
@@ -424,6 +460,13 @@ export default function Home() {
                         {emoji}
                       </button>
                     ))}
+                    <button 
+                      onClick={() => setActiveThreadMsg(msg)}
+                      className="p-1.5 text-muted hover:text-accent hover:bg-tertiary hover:scale-110 transition-all ml-1"
+                      title="Reply in Thread"
+                    >
+                      <CornerDownRight size={16} />
+                    </button>
                   </div>
                   <button 
                     onClick={(e) => handleContextMenu(e, msg)}
@@ -446,21 +489,17 @@ export default function Home() {
                 <p className="text-sm">This is the start of the #{activeChannel?.name} channel.</p>
               </div>
             )}
+            <div ref={messagesEndRef} />
           </div>
 
-          {/* Input Area */}
-          <div className="shrink-0 px-6 pb-6 pt-2 relative">
-            {activeTypingUsers.length > 0 && (
-              <div className="absolute -top-4 left-6 text-xs text-accent font-medium flex items-center gap-2">
-                <span className="flex gap-1">
-                  <motion.span animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0 }} className="w-1.5 h-1.5 bg-accent rounded-full" />
-                  <motion.span animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.2 }} className="w-1.5 h-1.5 bg-accent rounded-full" />
-                  <motion.span animate={{ y: [0, -3, 0] }} transition={{ repeat: Infinity, duration: 0.6, delay: 0.4 }} className="w-1.5 h-1.5 bg-accent rounded-full" />
-                </span>
-                {activeTypingUsers.join(', ')} {activeTypingUsers.length === 1 ? 'is' : 'are'} typing...
-              </div>
-            )}
-            <form onSubmit={handleSendMessage} className="relative group">
+          <div className="px-6 pb-6 pt-2 z-20">
+            <div className="mb-2 h-6">
+              <AnimatePresence>
+                {(activeTypingUsers.length > 0 || mockTypingUsers.length > 0) && <TypingIndicator usernames={activeTypingUsers.length > 0 ? activeTypingUsers : mockTypingUsers} />}
+              </AnimatePresence>
+            </div>
+            {/* Input Area */}
+            <form onSubmit={handleSendMessage} className="relative group flex justify-center">
               <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -468,8 +507,20 @@ export default function Home() {
                 className="hidden" 
                 accept="image/*"
               />
-              <motion.div 
-                layout
+              <div className="relative w-full max-w-[1000px] flex items-center justify-center mx-auto">
+                <AnimatePresence>
+                  {inputValue.startsWith('/') && (
+                    <SlashCommands 
+                      query={inputValue} 
+                      onSelect={(cmd) => {
+                        setInputValue(cmd);
+                        inputRef.current?.focus();
+                      }} 
+                    />
+                  )}
+                </AnimatePresence>
+                <motion.div 
+                  layout
                 animate={{
                   y: isInputFocused ? -20 : 0,
                   scale: isInputFocused ? 1.05 : 1,
@@ -520,7 +571,8 @@ export default function Home() {
                   </motion.button>
                   </Magnetic>
                 </div>
-              </motion.div>
+                </motion.div>
+              </div>
             </form>
           </div>
         </>
@@ -557,6 +609,15 @@ export default function Home() {
             useMessageStore.getState().toggleReaction(contextMenu.msg.id, emoji, user.id);
           }
         }}
+      />
+      <PinnedDrawer 
+        isOpen={isPinnedDrawerOpen} 
+        onClose={() => setIsPinnedDrawerOpen(false)} 
+        pinnedMessages={messages.filter(m => m.is_pinned)} 
+      />
+      <ThreadDrawer
+        message={activeThreadMsg}
+        onClose={() => setActiveThreadMsg(null)}
       />
     </>
   );
