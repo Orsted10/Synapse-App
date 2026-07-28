@@ -63,26 +63,26 @@
 
   [data-theme="telegram-light"] {
     --bg-primary: 255, 255, 255;
-    --bg-secondary: 240, 242, 245;
-    --bg-tertiary: 230, 235, 240;
+    --bg-secondary: 245, 247, 250;
+    --bg-tertiary: 235, 238, 242;
     --text-primary: 15, 20, 25;
-    --text-secondary: 110, 120, 130;
+    --text-secondary: 100, 110, 120;
     --accent: 51, 144, 236;
     --accent-hover: 43, 124, 201;
-    --border-subtle: 0, 0, 0, 0.08;
-    --glass-panel: 255, 255, 255, 0.5;
+    --border-subtle: 0, 0, 0, 0.05;
+    --glass-panel: 255, 255, 255, 0.85;
   }
 
   [data-theme="arctic"] {
-    --bg-primary: 248, 250, 252;
-    --bg-secondary: 241, 245, 249;
-    --bg-tertiary: 226, 232, 240;
+    --bg-primary: 252, 253, 255;
+    --bg-secondary: 242, 246, 250;
+    --bg-tertiary: 230, 236, 244;
     --text-primary: 15, 23, 42;
     --text-secondary: 100, 116, 139;
     --accent: 14, 165, 233;
     --accent-hover: 2, 132, 199;
-    --border-subtle: 0, 0, 0, 0.05;
-    --glass-panel: 255, 255, 255, 0.7;
+    --border-subtle: 0, 0, 0, 0.04;
+    --glass-panel: 255, 255, 255, 0.9;
   }
 
   [data-theme="oled"] {
@@ -466,4 +466,20 @@
 .chat-fade-mask {
   mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 100%);
   -webkit-mask-image: linear-gradient(to bottom, transparent 0%, black 5%, black 100%);
+}
+
+/* Premium Shadows & Depth */
+.shadow-premium {
+  box-shadow: 0 20px 40px -10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(var(--accent), 0.05);
+}
+
+.shadow-bubble {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.glass-bubble {
+  background: rgba(var(--bg-secondary), 0.7);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(var(--border-subtle), 0.5);
 }

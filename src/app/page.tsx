@@ -18,9 +18,10 @@ import { CustomCursor } from "@/components/CustomCursor";
 import { ScrambleText } from "@/components/ScrambleText";
 import { StaggerText } from "@/components/StaggerText";
 import { PinnedDrawer } from "@/components/PinnedDrawer";
-import { TypingIndicator } from "@/components/TypingIndicator";
 import { SlashCommands } from "@/components/SlashCommands";
 import { ThreadDrawer } from "@/components/ThreadDrawer";
+import { EmojiPickerPopover } from "@/components/EmojiPickerPopover";
+import { MediaGalleryViewer } from "@/components/MediaGalleryViewer";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from "@/lib/supabase";
@@ -34,8 +35,10 @@ export default function Home() {
   const fileInputRef = useRef<HTMLInputElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const emojiButtonRef = useRef<HTMLButtonElement>(null);
 
   const [inputValue, setInputValue] = useState("");
+  const [isEmojiPickerOpen, setIsEmojiPickerOpen] = useState(false);
   const [isInputFocused, setIsInputFocused] = useState(false);
   const [selectedUser, setSelectedUser] = useState<any>(null);
   const [editingMessageId, setEditingMessageId] = useState<string | null>(null);
@@ -47,6 +50,7 @@ export default function Home() {
   const [activeThreadMsg, setActiveThreadMsg] = useState<any>(null);
   const [deleteModalMessage, setDeleteModalMessage] = useState<any>(null);
   const [isPinnedDrawerOpen, setIsPinnedDrawerOpen] = useState(false);
+  const [galleryImage, setGalleryImage] = useState<string | null>(null);
   const [mockTypingUsers, setMockTypingUsers] = useState<string[]>([]);
   const [contextMenu, setContextMenu] = useState<{ isOpen: boolean; x: number; y: number; msg: any }>({ 
     isOpen: false, x: 0, y: 0, msg: null 
@@ -273,22 +277,22 @@ export default function Home() {
     <>
       <AppLayout>
       {/* Top Header - Dynamic Island */}
-      <div className="absolute top-4 left-1/2 -translate-x-1/2 h-14 border border-white/10 rounded-full flex items-center justify-between px-6 shrink-0 glass-panel-heavy z-50 shadow-2xl transition-all duration-500 hover:w-[55%] w-[50%] min-w-[400px]">
-        <div className="flex items-center gap-3">
-          <Hash size={22} className="text-muted" />
-          <div className="flex items-center gap-3">
-            <span className="font-bold text-[18px] tracking-wide text-gradient-animated">
+      <div className="absolute top-2 left-1/2 -translate-x-1/2 h-10 min-w-[320px] max-w-[500px] border border-white/10 rounded-full flex items-center justify-between px-4 shrink-0 glass-panel-heavy z-50 shadow-2xl transition-all duration-500 hover:w-[50%] w-[45%]">
+        <div className="flex items-center gap-2">
+          <Hash size={18} className="text-muted" />
+          <div className="flex items-center gap-2">
+            <span className="font-bold text-[15px] tracking-wide text-gradient-animated">
               {activeChannel ? <ScrambleText text={activeChannel.name} /> : 'Select a channel'}
             </span>
           </div>
         </div>
         {activeChannel && (
-          <div className="flex items-center gap-4 text-muted">
+          <div className="flex items-center gap-3 text-muted">
             <button className="hover:text-foreground transition-colors" title="Pinned Messages" onClick={() => setIsPinnedDrawerOpen(true)}>
-              <Pin size={20} />
+              <Pin size={16} />
             </button>
             <button className="hover:text-foreground transition-colors" title="Member List">
-              <Users size={20} />
+              <Users size={16} />
             </button>
           </div>
         )}
@@ -327,133 +331,133 @@ export default function Home() {
                   damping: 20,
                   stiffness: 200
                 }}
-                key={msg.id} 
+                className={`group flex items-start gap-4 px-6 py-1 hover:bg-white/5 transition-colors relative ${editingMessageId === msg.id ? 'bg-accent/5' : ''} ${isGrouped ? 'mt-0' : 'mt-4'}`}
+                key={msg.id}
                 onContextMenu={(e) => handleContextMenu(e, msg)}
-                className={`group relative hover:bg-white/5 hover:backdrop-blur-md -mx-4 rounded-2xl transition-all duration-300 ${contextMenu.isOpen && contextMenu.msg?.id === msg.id ? 'bg-white/5 backdrop-blur-md shadow-lg' : ''} ${isGrouped ? 'mt-[-16px]' : ''}`}
               >
-                {isGrouped && (
-                  <div className="absolute left-[36px] top-[-16px] bottom-0 w-[2px] bg-gradient-to-b from-transparent via-white/10 to-transparent z-0 group-hover:via-accent/30 transition-colors" />
-                )}
-                <TiltCard className="w-full h-full rounded-[inherit]">
-                  <SpotlightCard className={`w-full h-full flex gap-4 px-4 ${isGrouped ? 'py-1' : 'py-2'} rounded-[inherit]`}>
-                  {/* Avatar */}
-                  {isGrouped ? (
-                    <div className="w-10 shrink-0 opacity-0 group-hover:opacity-100 flex items-center justify-center text-[10px] text-muted font-bold transition-opacity">
-                      {new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                    </div>
-                  ) : (
-                    <div 
-                      onClick={() => handleUserClick(msg.user)}
-                      className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-bold text-white shadow-sm cursor-pointer hover:scale-110 transition-transform mt-1 z-10 relative"
-                      style={{
-                        backgroundColor: userColor,
-                        boxShadow: `0 0 20px ${userColor}60, inset 0 0 10px rgba(255,255,255,0.2)`
-                      }}
-                    >
-                      {msg.user?.username ? msg.user.username.substring(0, 1).toUpperCase() : '?'}
-                    </div>
-                  )}
-
-                  <div className="flex flex-col w-full max-w-[85%] z-10">
-                  {/* Message Header */}
-                  {!isGrouped && (
-                    <div className="flex items-center gap-2 mb-1">
-                      <span 
+                <div className={`flex gap-3 max-w-[85%] w-full ${msg.user_id === profile?.id ? 'flex-row-reverse ml-auto' : 'flex-row'}`}>
+                  {/* Avatar Area */}
+                  <div className="flex flex-col justify-end pb-1 shrink-0">
+                    {!isGrouped && (
+                      <div 
                         onClick={() => handleUserClick(msg.user)}
-                        className={`font-bold text-[15px] hover:underline cursor-pointer tracking-wide ${msg.user?.role?.toLowerCase() === 'admin' ? 'role-admin' : msg.user?.role?.toLowerCase() === 'mod' ? 'role-mod' : msg.user?.role?.toLowerCase() === 'vip' ? 'role-vip' : ''}`}
-                        style={{ color: !['admin', 'mod', 'vip'].includes(msg.user?.role?.toLowerCase() || '') ? userColor : undefined }}
-                      >
-                        <StaggerText text={msg.user?.username || 'Unknown User'} />
-                      </span>
-                      <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-semibold tracking-wide border ${msg.user?.role?.toLowerCase() === 'admin' ? 'bg-[#f6d365]/10 text-[#f6d365] border-[#f6d365]/20' : msg.user?.role?.toLowerCase() === 'mod' ? 'bg-[#a18cd1]/10 text-[#a18cd1] border-[#a18cd1]/20' : 'bg-accent/10 text-accent border-accent/20'}`}>
-                        {msg.user?.role || 'Member'}
-                      </span>
-                      <span className="text-xs text-muted ml-1">
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
-                      </span>
-                      {msg.is_pinned && (
-                        <span className="text-[10px] text-accent font-bold uppercase tracking-wider flex items-center gap-1 ml-1 bg-accent/10 px-1.5 py-0.5 rounded">
-                          📌 Pinned
-                        </span>
-                      )}
-                    </div>
-                  )}  
-                  
-                  {isGrouped && msg.is_pinned && (
-                    <div className="flex mb-1">
-                      <span className="text-[10px] text-accent font-bold uppercase tracking-wider flex items-center gap-1 bg-accent/10 px-1.5 py-0.5 rounded">
-                        📌 Pinned
-                      </span>
-                    </div>
-                  )}
-
-                  {/* Message Content */}
-                  {editingMessageId === msg.id ? (
-                    <div className="mt-1 relative">
-                      <input
-                        type="text"
-                        value={editContent}
-                        onChange={(e) => setEditContent(e.target.value)}
-                        onKeyDown={(e) => handleKeyDown(e, msg.id)}
-                        className="w-full bg-secondary text-foreground border border-subtle focus:border-accent outline-none px-3 py-2 rounded-lg"
-                        autoFocus
-                      />
-                      <span className="text-[10px] text-muted absolute -bottom-5 left-0">
-                        escape to <span className="text-accent cursor-pointer hover:underline" onClick={() => setEditingMessageId(null)}>cancel</span> • enter to <span className="text-accent cursor-pointer hover:underline" onClick={() => handleSaveEdit(msg.id)}>save</span>
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="text-[15px] leading-relaxed text-foreground/90 markdown-content">
-                      <ReactMarkdown 
-                        remarkPlugins={[remarkGfm]}
-                        components={{
-                          p: ({node, ...props}) => <p className="mb-1 last:mb-0 inline-block" {...props} />,
-                          a: ({node, ...props}) => <a className="text-accent hover:underline" target="_blank" rel="noreferrer" {...props} />,
-                          code: ({node, inline, className, children, ...props}: any) => 
-                            inline 
-                              ? <code className="bg-secondary px-1.5 py-0.5 rounded-md text-[13px] font-mono text-accent" {...props}>{children}</code>
-                              : <CodeBlock className={className}>{children}</CodeBlock>,
-                          ul: ({node, ...props}) => <ul className="list-disc ml-4 my-1" {...props} />,
-                          ol: ({node, ...props}) => <ol className="list-decimal ml-4 my-1" {...props} />,
-                          blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-subtle pl-3 my-1 italic text-muted" {...props} />,
-                          img: ({node, ...props}) => <img className="max-w-full max-h-[300px] rounded-lg my-2 object-contain bg-secondary/50" loading="lazy" {...props} />,
+                        className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shadow-premium cursor-pointer hover:scale-110 transition-transform relative z-10"
+                        style={{
+                          backgroundColor: userColor,
+                          backgroundImage: `linear-gradient(135deg, ${userColor} 0%, rgba(255,255,255,0.2) 100%)`
                         }}
                       >
-                        {msg.content}
-                      </ReactMarkdown>
-                      {msg.is_edited && <span className="text-[10px] text-muted ml-1 select-none inline-block">(edited)</span>}
-                    </div>
-                  )}
-                  {/* Reactions Area */}
-                  {msg.reactions && Object.keys(msg.reactions).length > 0 && (
-                    <div className="flex flex-wrap gap-1.5 mt-1.5">
-                      {Object.entries(msg.reactions).map(([emoji, users]: [string, any]) => {
-                        const hasReacted = user && users.includes(user.id);
-                        const count = users.length;
-                        return (
-                          <motion.button
-                            key={emoji}
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            animate={{ scale: count > 3 ? Math.min(1 + (count - 3) * 0.1, 1.4) : 1 }}
-                            onClick={() => user && toggleReaction(msg.id, emoji, user.id)}
-                            className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[6px] border ${
-                              hasReacted 
-                                ? 'bg-accent/20 border-accent/50 text-accent' 
-                                : 'bg-secondary/50 border-subtle text-muted hover:bg-tertiary hover:border-subtle/80 hover:text-foreground'
-                            } transition-colors text-[13px] font-medium ${count > 3 ? 'shadow-[0_0_15px_rgba(var(--accent),0.3)]' : ''}`}
+                        {msg.user?.username ? msg.user.username.substring(0, 1).toUpperCase() : '?'}
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Message Bubble Container */}
+                  <div className={`flex flex-col w-full z-10 ${msg.user_id === profile?.id ? 'items-end' : 'items-start'}`}>
+                    
+                    {/* Message Header */}
+                    {!isGrouped && (
+                      <div className={`flex items-center gap-2 mb-1 ${msg.user_id === profile?.id ? 'flex-row-reverse' : ''}`}>
+                        <span 
+                          onClick={() => handleUserClick(msg.user)}
+                          className={`font-bold text-[13px] hover:underline cursor-pointer tracking-wide ${msg.user?.role?.toLowerCase() === 'admin' ? 'role-admin' : msg.user?.role?.toLowerCase() === 'mod' ? 'role-mod' : msg.user?.role?.toLowerCase() === 'vip' ? 'role-vip' : ''}`}
+                          style={{ color: !['admin', 'mod', 'vip'].includes(msg.user?.role?.toLowerCase() || '') ? userColor : undefined }}
+                        >
+                          <StaggerText text={msg.user?.username || 'Unknown User'} />
+                        </span>
+                        <span className="text-[10px] text-muted">
+                          {new Date(msg.created_at).toLocaleTimeString([], { hour: 'numeric', minute: '2-digit' })}
+                        </span>
+                        {msg.is_pinned && (
+                          <span className="text-[9px] text-accent font-bold uppercase tracking-wider flex items-center gap-1 bg-accent/10 px-1.5 py-0.5 rounded">
+                            📌
+                          </span>
+                        )}
+                      </div>
+                    )}  
+
+                    {/* Message Content Bubble */}
+                    <div className={`relative group/bubble max-w-full ${msg.user_id === profile?.id ? 'text-right' : 'text-left'}`}>
+                      {editingMessageId === msg.id ? (
+                        <div className="mt-1 relative min-w-[300px]">
+                          <input
+                            type="text"
+                            value={editContent}
+                            onChange={(e) => setEditContent(e.target.value)}
+                            onKeyDown={(e) => handleKeyDown(e, msg.id)}
+                            className="w-full bg-secondary text-foreground border border-subtle focus:border-accent outline-none px-4 py-2.5 rounded-2xl shadow-bubble"
+                            autoFocus
+                          />
+                          <span className="text-[10px] text-muted absolute -bottom-5 right-0">
+                            escape to cancel • enter to save
+                          </span>
+                        </div>
+                      ) : (
+                        <div 
+                          className={`text-[15px] leading-relaxed markdown-content px-4 py-2.5 shadow-bubble transition-all ${msg.user_id === profile?.id ? 'bg-accent text-white rounded-2xl rounded-tr-sm' : 'glass-bubble text-foreground rounded-2xl rounded-tl-sm'}`}
+                        >
+                          <ReactMarkdown 
+                            remarkPlugins={[remarkGfm]}
+                            components={{
+                              p: ({node, ...props}) => <p className="mb-1 last:mb-0 inline-block" {...props} />,
+                              a: ({node, ...props}) => <a className="underline opacity-90 hover:opacity-100" target="_blank" rel="noreferrer" {...props} />,
+                              code: ({node, inline, className, children, ...props}: any) => 
+                                inline 
+                                  ? <code className="bg-black/20 px-1.5 py-0.5 rounded-md text-[13px] font-mono" {...props}>{children}</code>
+                                  : <CodeBlock className={className}>{children}</CodeBlock>,
+                              ul: ({node, ...props}) => <ul className="list-disc ml-4 my-1" {...props} />,
+                              ol: ({node, ...props}) => <ol className="list-decimal ml-4 my-1" {...props} />,
+                              blockquote: ({node, ...props}) => <blockquote className="border-l-4 border-white/30 pl-3 my-1 italic opacity-90" {...props} />,
+                              img: ({node, ...props}) => (
+                                <img 
+                                  className="max-w-full max-h-[300px] rounded-xl my-2 object-contain bg-black/10 cursor-pointer hover:opacity-90 transition-opacity" 
+                                  loading="lazy" 
+                                  onClick={() => setGalleryImage(props.src || null)}
+                                  {...props} 
+                                />
+                              ),
+                            }}
                           >
-                            <span>{emoji}</span>
-                            <span>{count}</span>
-                          </motion.button>
-                        );
-                      })}
+                            {msg.content}
+                          </ReactMarkdown>
+                          {msg.is_edited && (
+                            <span className="text-[9px] opacity-60 ml-2 italic">(edited)</span>
+                          )}
+                        </div>
+                      )}
                     </div>
-                  )}
+                    
+                    {/* Reactions Area */}
+                    {msg.reactions && Object.keys(msg.reactions).length > 0 && (
+                      <div className={`flex flex-wrap gap-1.5 mt-1.5 ${msg.user_id === profile?.id ? 'justify-end' : 'justify-start'}`}>
+                        {Object.entries(msg.reactions).map(([emoji, users]: [string, any]) => {
+                          const hasReacted = user && users.includes(user.id);
+                          const count = users.length;
+                          return (
+                            <motion.button
+                              key={emoji}
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              animate={{ scale: count > 3 ? Math.min(1 + (count - 3) * 0.1, 1.4) : 1 }}
+                              onClick={() => user && toggleReaction(msg.id, emoji, user.id)}
+                              className={`flex items-center gap-1.5 px-2 py-0.5 rounded-[6px] border ${
+                                hasReacted 
+                                  ? 'bg-accent/20 border-accent/50 text-accent' 
+                                  : 'bg-secondary/50 border-subtle text-muted hover:bg-tertiary hover:border-subtle/80 hover:text-foreground'
+                              } transition-colors text-[13px] font-medium ${count > 3 ? 'shadow-[0_0_15px_rgba(var(--accent),0.3)]' : ''}`}
+                            >
+                              <span>{emoji}</span>
+                              <span>{count}</span>
+                            </motion.button>
+                          );
+                        })}
+                      </div>
+                    )}
+                  </div>
                 </div>
 
                 {/* Hover Actions Menu */}
-                <div className="absolute top-0 right-4 -translate-y-4 glass-panel rounded-xl opacity-0 group-hover:opacity-100 group-hover:-translate-y-5 transition-all duration-300 flex items-center overflow-hidden z-10">
+                <div className="absolute top-0 right-4 -translate-y-4 glass-panel rounded-xl opacity-0 group-hover:opacity-100 group-hover:-translate-y-5 transition-all duration-300 flex items-center overflow-hidden z-10 shadow-premium border border-subtle">
                   <div className="flex items-center border-r border-white/10 pr-1 mr-1">
                     {['👍', '❤️', '😂', '🔥'].map(emoji => (
                       <button
@@ -481,8 +485,6 @@ export default function Home() {
                     <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="w-5 h-5"><circle cx="12" cy="12" r="1"></circle><circle cx="19" cy="12" r="1"></circle><circle cx="5" cy="12" r="1"></circle></svg>
                   </button>
                 </div>
-                  </SpotlightCard>
-                </TiltCard>
               </motion.div>
             )})}
               </motion.div>
@@ -497,14 +499,14 @@ export default function Home() {
             <div ref={messagesEndRef} />
           </div>
 
-          <div className="px-6 pb-6 pt-2 z-20">
-            <div className="mb-2 h-6">
+          <div className="px-0 pb-0 pt-2 z-20 w-full mt-auto">
+            <div className="mb-2 h-6 px-6">
               <AnimatePresence>
                 {(activeTypingUsers.length > 0 || mockTypingUsers.length > 0) && <TypingIndicator usernames={activeTypingUsers.length > 0 ? activeTypingUsers : mockTypingUsers} />}
               </AnimatePresence>
             </div>
             {/* Input Area */}
-            <form onSubmit={handleSendMessage} className="relative group flex justify-center">
+            <form onSubmit={handleSendMessage} className="relative group flex justify-center w-full">
               <input 
                 type="file" 
                 ref={fileInputRef} 
@@ -512,7 +514,7 @@ export default function Home() {
                 className="hidden" 
                 accept="image/*"
               />
-              <div className="relative w-full max-w-[1000px] flex items-center justify-center mx-auto">
+              <div className="relative w-full max-w-[1200px] flex items-center justify-center mx-auto px-6">
                 <AnimatePresence>
                   {inputValue.startsWith('/') && (
                     <SlashCommands 
@@ -527,14 +529,11 @@ export default function Home() {
                 <motion.div 
                   layout
                 animate={{
-                  y: isInputFocused ? -20 : 0,
-                  scale: isInputFocused ? 1.05 : 1,
-                  boxShadow: isInputFocused ? "0 40px 80px -20px rgba(var(--accent), 0.6)" : "0 10px 40px -10px rgba(0,0,0,0.3)",
-                  width: isInputFocused ? "100%" : "85%",
-                  margin: "0 auto"
+                  boxShadow: isInputFocused ? "0 -10px 40px -10px rgba(var(--accent), 0.3)" : "0 -5px 20px -5px rgba(0,0,0,0.2)",
+                  width: "100%"
                 }}
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className={`flex items-center glass-panel-heavy rounded-[32px] px-6 py-4 transition-all duration-500 overflow-hidden relative ${isInputFocused ? 'border-accent/80' : 'border-white/10'}`}
+                className={`flex items-center glass-panel-heavy rounded-t-[24px] rounded-b-none px-6 py-4 transition-all duration-500 overflow-hidden relative border-b-0 ${isInputFocused ? 'border-accent/80' : 'border-white/10'}`}
               >
                 {/* Background ambient glow inside input when focused */}
                 <div className={`absolute inset-0 bg-accent/5 transition-opacity duration-500 ${isInputFocused ? 'opacity-100' : 'opacity-0'} pointer-events-none`} />
@@ -569,13 +568,22 @@ export default function Home() {
                   disabled={!activeChannelId}
                 />
                 <div className="flex items-center gap-2 ml-3">
-                  <button 
-                    type="button" 
-                    onClick={() => alert('Emoji picker coming in Phase 6!')}
-                    className="text-muted hover:text-foreground transition-colors p-1.5 hover:bg-tertiary rounded-md"
-                  >
-                    <Smile size={20} />
-                  </button>
+                  <div className="relative">
+                    <button 
+                      type="button" 
+                      ref={emojiButtonRef}
+                      onClick={() => setIsEmojiPickerOpen(prev => !prev)}
+                      className={`text-muted hover:text-foreground transition-colors p-1.5 rounded-md ${isEmojiPickerOpen ? 'bg-tertiary text-foreground' : 'hover:bg-tertiary'}`}
+                    >
+                      <Smile size={20} />
+                    </button>
+                    <EmojiPickerPopover 
+                      isOpen={isEmojiPickerOpen} 
+                      onClose={() => setIsEmojiPickerOpen(false)} 
+                      buttonRef={emojiButtonRef}
+                      onEmojiSelect={(emoji) => setInputValue(prev => prev + emoji)}
+                    />
+                  </div>
                   <Magnetic>
                   <motion.button 
                     type="submit" 
@@ -630,11 +638,21 @@ export default function Home() {
             useMessageStore.getState().toggleReaction(contextMenu.msg.id, emoji, user.id);
           }
         }}
+        onReplyInThread={() => {
+          if (contextMenu.msg) {
+            setActiveThreadMsg(contextMenu.msg);
+          }
+        }}
       />
       <PinnedDrawer 
         isOpen={isPinnedDrawerOpen} 
         onClose={() => setIsPinnedDrawerOpen(false)} 
         pinnedMessages={messages.filter(m => m.is_pinned)} 
+      />
+      <MediaGalleryViewer 
+        isOpen={!!galleryImage} 
+        onClose={() => setGalleryImage(null)} 
+        imageUrl={galleryImage} 
       />
     </>
   );

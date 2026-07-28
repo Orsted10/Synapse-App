@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, MicOff, Headphones, Video, MonitorUp, PhoneOff, Settings } from 'lucide-react';
 import { useUserStore } from '@/store/userStore';
@@ -6,6 +6,32 @@ import { useUserStore } from '@/store/userStore';
 interface VoiceChannelProps {
   channelName: string;
 }
+
+// Audio visualizer component that shows animated bars when speaking
+const AudioVisualizer = ({ isSpeaking, color }: { isSpeaking: boolean, color: string }) => {
+  return (
+    <div className="absolute inset-0 flex items-center justify-center pointer-events-none opacity-40">
+      <div className="w-48 h-48 rounded-full border-2 border-dashed animate-[spin_10s_linear_infinite]" style={{ borderColor: isSpeaking ? color : 'transparent' }} />
+      <div className="absolute inset-0 flex items-center justify-center gap-1.5">
+        {[...Array(8)].map((_, i) => (
+          <motion.div
+            key={i}
+            initial={{ height: 4 }}
+            animate={{ height: isSpeaking ? [4, 24 + Math.random() * 30, 4] : 4 }}
+            transition={{
+              repeat: Infinity,
+              duration: 0.5 + Math.random() * 0.5,
+              ease: "easeInOut",
+              delay: i * 0.1
+            }}
+            className="w-1.5 rounded-full"
+            style={{ backgroundColor: color }}
+          />
+        ))}
+      </div>
+    </div>
+  );
+};
 
 export function VoiceChannel({ channelName }: VoiceChannelProps) {
   const { user, profile } = useUserStore();
@@ -83,13 +109,14 @@ export function VoiceChannel({ channelName }: VoiceChannelProps) {
               >
                 {/* Fallback Avatar inside Voice Box */}
                 <div className="absolute inset-0 flex items-center justify-center bg-gradient-to-br from-tertiary to-background">
-                  <div className={`w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold text-white transition-all duration-300 ${p.isSpeaking ? 'scale-110 shadow-[0_0_40px_rgba(34,197,94,0.4)]' : ''}`} style={{ backgroundColor: `hsl(${i * 60}, 60%, 50%)` }}>
+                  {p.isSpeaking && <AudioVisualizer isSpeaking={p.isSpeaking} color="rgba(34, 197, 94, 0.8)" />}
+                  <div className={`w-24 h-24 rounded-full flex items-center justify-center text-3xl font-bold text-white transition-all duration-300 z-10 relative ${p.isSpeaking ? 'scale-110 shadow-[0_0_40px_rgba(34,197,94,0.4)]' : ''}`} style={{ backgroundColor: `hsl(${i * 60}, 60%, 50%)` }}>
                     {p.avatar}
                   </div>
                 </div>
 
                 {/* Name Tag */}
-                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between bg-black/60 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10">
+                <div className="absolute bottom-4 left-4 right-4 flex items-center justify-between bg-black/60 backdrop-blur-md px-3 py-2 rounded-lg border border-white/10 z-20">
                   <span className="font-semibold text-sm">{p.name}</span>
                   {!p.isSpeaking && p.id !== user?.id && <MicOff size={14} className="text-red-400" />}
                   {p.id === user?.id && isMuted && <MicOff size={14} className="text-red-400" />}

@@ -17,9 +17,10 @@ interface MessageContextMenuProps {
   msg?: any;
   onPin?: () => void;
   onReaction?: (emoji: string) => void;
+  onReplyInThread?: () => void;
 }
 
-export function MessageContextMenu({ isOpen, onClose, position, onEdit, onDelete, canEditDelete, msg, onPin, onReaction }: MessageContextMenuProps) {
+export function MessageContextMenu({ isOpen, onClose, position, onEdit, onDelete, canEditDelete, msg, onPin, onReaction, onReplyInThread }: MessageContextMenuProps) {
   const menuRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -98,7 +99,7 @@ export function MessageContextMenu({ isOpen, onClose, position, onEdit, onDelete
           )}
           <MenuItem icon={<CornerUpLeft size={16} />} label="Reply" onClick={() => triggerMock('Reply')} />
           <MenuItem icon={<Forward size={16} />} label="Forward" onClick={() => triggerMock('Forward')} />
-          <MenuItem icon={<Hash size={16} />} label="Create Thread" onClick={() => triggerMock('Create Thread')} />
+          <MenuItem icon={<Hash size={16} />} label="Reply in Thread" onClick={() => { if (onReplyInThread) onReplyInThread(); onClose(); }} />
           
           <div className="h-[1px] bg-subtle my-1.5 mx-2" />
           

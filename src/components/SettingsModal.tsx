@@ -2,7 +2,7 @@
 
 import React, { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, User, Shield, Bell, Image as ImageIcon, Edit2 } from "lucide-react";
+import { X, User, Shield, Bell, Image as ImageIcon, Edit2, Palette } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/lib/supabase";
 import { useUserStore } from "@/store/userStore";
@@ -19,6 +19,26 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
   
   const [username, setUsername] = useState(profile?.username || "");
   const [isLoading, setIsLoading] = useState(false);
+  
+  // Audio state
+  const [uiSoundsEnabled, setUiSoundsEnabled] = useState(true);
+  const [msgChimeEnabled, setMsgChimeEnabled] = useState(true);
+
+  const playBlip = () => {
+    try {
+      const audio = new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA=='); // tiny pop mock
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
+    } catch (e) {}
+  };
+
+  const playChime = () => {
+    try {
+      const audio = new Audio('data:audio/wav;base64,UklGRjIAAABXQVZFZm10IBIAAAABAAEAQB8AAEAfAAABAAgAAABmYWN0BAAAAAAAAABkYXRhAAAAAA==');
+      audio.volume = 0.5;
+      audio.play().catch(() => {});
+    } catch (e) {}
+  };
 
   // Sync state when opened
   React.useEffect(() => {
@@ -81,6 +101,13 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                 className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[15px] transition-colors ${activeTab === 'profile' ? 'bg-secondary text-foreground' : 'text-muted hover:bg-secondary/50 hover:text-foreground'}`}
               >
                 <User size={18} /> My Profile
+              </button>
+              
+              <button 
+                onClick={() => setActiveTab("themes")}
+                className={`w-full flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-[15px] transition-colors ${activeTab === 'themes' ? 'bg-secondary text-foreground' : 'text-muted hover:bg-secondary/50 hover:text-foreground'}`}
+              >
+                <Palette size={18} /> Appearance & Themes
               </button>
               
               <button 
@@ -159,6 +186,22 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                     
                     <div>
                       <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
+                        Custom Status
+                      </label>
+                      <div className="relative flex items-center">
+                        <button type="button" className="absolute left-3 w-6 h-6 rounded flex items-center justify-center hover:bg-tertiary transition-colors text-lg" onClick={() => toast.info('Emoji picker for status coming soon!')}>
+                          💭
+                        </button>
+                        <input
+                          type="text"
+                          className="w-full bg-secondary text-foreground border border-subtle focus:border-accent outline-none pl-12 pr-4 py-3 rounded-xl transition-colors shadow-sm"
+                          placeholder="What's on your mind?"
+                        />
+                      </div>
+                    </div>
+                    
+                    <div>
+                      <label className="block text-xs font-bold text-muted uppercase tracking-wider mb-2">
                         About Me
                       </label>
                       <textarea
@@ -179,12 +222,69 @@ export function SettingsModal({ isOpen, onClose }: SettingsModalProps) {
                   
                   <div className="h-[1px] bg-subtle my-10" />
                   
-                  <div className="bg-secondary/50 rounded-2xl p-6 border border-subtle mb-6 flex items-center justify-between">
+                  <div className="bg-secondary/50 rounded-2xl p-6 border border-subtle flex items-center justify-between">
                     <div>
-                      <h3 className="text-lg font-bold text-foreground mb-1">App Theme</h3>
+                      <h3 className="text-lg font-bold text-foreground mb-1">Quick Theme</h3>
                       <p className="text-sm text-muted">Change how Synapse looks.</p>
                     </div>
                     <ThemeSwitcher />
+                  </div>
+                </div>
+              )}
+
+              {activeTab === "themes" && (
+                <div className="max-w-2xl">
+                  <h2 className="text-2xl font-bold text-foreground mb-6">Appearance & Themes</h2>
+                  <p className="text-muted mb-8">Customize the look and feel of your Synapse experience.</p>
+                  
+                  <div className="bg-secondary/50 rounded-2xl p-6 border border-subtle mb-6 flex items-center justify-between shadow-sm">
+                    <div>
+                      <h3 className="text-lg font-bold text-foreground mb-1">Global Theme</h3>
+                      <p className="text-sm text-muted">Select from the full library of premium themes.</p>
+                    </div>
+                    <ThemeSwitcher />
+                  </div>
+
+                  <h3 className="text-[11px] font-bold text-muted uppercase tracking-wider mb-4 mt-8">Sound & Haptics</h3>
+                  <div className="space-y-3">
+                    <div className="bg-secondary/50 rounded-xl p-4 border border-subtle flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-foreground">UI Sound Effects</h4>
+                        <p className="text-xs text-muted mt-1">Play satisfying sounds when interacting with buttons and menus.</p>
+                      </div>
+                      <div 
+                        className={`w-12 h-6 rounded-full relative cursor-pointer shadow-inner transition-colors ${uiSoundsEnabled ? 'bg-accent' : 'bg-black/30'}`}
+                        onClick={() => {
+                          setUiSoundsEnabled(!uiSoundsEnabled);
+                          if (!uiSoundsEnabled) playBlip();
+                        }}
+                      >
+                        <motion.div 
+                          className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                          animate={{ right: uiSoundsEnabled ? 4 : 28 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                      </div>
+                    </div>
+                    <div className="bg-secondary/50 rounded-xl p-4 border border-subtle flex items-center justify-between">
+                      <div>
+                        <h4 className="font-semibold text-foreground">Message Chime</h4>
+                        <p className="text-xs text-muted mt-1">Play a sound when receiving a new message.</p>
+                      </div>
+                      <div 
+                        className={`w-12 h-6 rounded-full relative cursor-pointer shadow-inner transition-colors ${msgChimeEnabled ? 'bg-accent' : 'bg-black/30'}`}
+                        onClick={() => {
+                          setMsgChimeEnabled(!msgChimeEnabled);
+                          if (!msgChimeEnabled) playChime();
+                        }}
+                      >
+                        <motion.div 
+                          className="absolute top-1 w-4 h-4 bg-white rounded-full shadow-sm"
+                          animate={{ right: msgChimeEnabled ? 4 : 28 }}
+                          transition={{ type: "spring", stiffness: 500, damping: 30 }}
+                        />
+                      </div>
+                    </div>
                   </div>
                 </div>
               )}

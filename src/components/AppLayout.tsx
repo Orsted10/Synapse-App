@@ -217,33 +217,35 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <span className="truncate">{workspaces.find(w => w.id === activeWorkspaceId)?.name}</span>
               <Settings size={16} className="text-muted group-hover:text-foreground transition-colors" />
             </div>
+            {/* Parallax Banner (Moved outside scroll container to prevent bleed) */}
+            <motion.div 
+              className="absolute top-14 left-0 w-full h-[120px] bg-cover bg-center pointer-events-none z-0"
+            >
+              <div 
+                className="absolute inset-0 opacity-20 mix-blend-overlay"
+                style={{ backgroundImage: `url(https://picsum.photos/seed/${activeWorkspaceId}/400/200)` }}
+              />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/90" />
+            </motion.div>
 
-            <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar relative">
-              {/* Parallax Banner inside scroll container */}
-              <motion.div 
-                style={{ y: bannerY, opacity: bannerOpacity }}
-                className="absolute top-0 left-0 w-full h-[120px] bg-cover bg-center pointer-events-none"
-              >
-                <div 
-                  className="absolute inset-0 opacity-40 mix-blend-overlay"
-                  style={{ backgroundImage: `url(https://picsum.photos/seed/${activeWorkspaceId}/400/200)` }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/90" />
-              </motion.div>
-              
-              <div className="relative z-10 p-2 pt-[60px]">
-                <div className="mb-2 px-2 flex items-center justify-between text-muted mt-2">
-                <span className="text-xs font-bold uppercase tracking-wider">Text Channels</span>
-                <button 
-                  onClick={() => setIsCreateChannelModalOpen(true)}
-                  className="hover:text-foreground transition-colors p-1 bg-white/0 hover:bg-white/10 rounded-full"
-                >
-                  <Plus size={16} />
-                </button>
-              </div>
+            <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar relative z-10 pt-[40px]">
+              <div className="relative p-2">
+                <div className="sticky top-0 mb-2 px-2 py-1.5 flex items-center justify-between text-muted mt-2 glass-panel rounded-lg shadow-sm backdrop-blur-md border border-subtle/30 z-20">
+                  <span className="text-[11px] font-bold uppercase tracking-wider">Text Channels</span>
+                  <button 
+                    onClick={() => setIsCreateChannelModalOpen(true)}
+                    className="hover:text-foreground transition-colors p-1 bg-white/0 hover:bg-white/10 rounded-md"
+                  >
+                    <Plus size={14} />
+                  </button>
+                </div>
               {channels.map((channel) => {
                 const isActive = activeChannelId === channel.id;
                 const Icon = channel.type === 'voice' ? Volume2 : Hash;
+                // Mock indicators
+                const hasUnread = channel.name === 'general' && !isActive;
+                const mentions = channel.name === 'announcements' && !isActive ? 1 : 0;
+                
                 return (
                   <TiltCard key={channel.id} className="w-full mb-0.5">
                     <button
@@ -251,14 +253,25 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
                       className={`w-full flex items-center gap-2 px-2 py-2 rounded-lg font-medium text-[15px] transition-all duration-200 group relative overflow-hidden ${
                         isActive
                           ? "bg-white/10 text-foreground shadow-sm"
+                          : hasUnread || mentions > 0
+                          ? "text-foreground hover:bg-white/5"
                           : "text-muted hover:bg-white/5 hover:text-foreground"
                       }`}
                     >
                       {isActive && (
                         <div className="absolute left-0 top-0 bottom-0 w-1 bg-accent/80 rounded-r shadow-[0_0_8px_rgba(var(--accent),0.8)]" />
                       )}
+                      {hasUnread && !mentions && (
+                        <div className="absolute left-[-2px] top-1/2 -translate-y-1/2 w-1.5 h-1.5 bg-white rounded-full shadow-[0_0_5px_rgba(255,255,255,0.5)]" />
+                      )}
                       <Icon size={20} className="shrink-0 opacity-80" />
-                      <span className="truncate">{channel.name}</span>
+                      <span className={`truncate flex-1 text-left ${hasUnread || mentions > 0 ? 'font-bold' : ''}`}>{channel.name}</span>
+                      
+                      {mentions > 0 && (
+                        <div className="shrink-0 bg-red-500 text-white text-[10px] font-bold px-1.5 py-0.5 rounded-full shadow-sm leading-none ml-1">
+                          {mentions}
+                        </div>
+                      )}
                     </button>
                   </TiltCard>
                 );

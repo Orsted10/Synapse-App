@@ -106,7 +106,7 @@ export function RightSidebar() {
           </div>
         </div>
 
-        <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-4">
           
           {roles.map(role => {
             // A member is grouped under this role if it's their highest priority role
@@ -120,8 +120,8 @@ export function RightSidebar() {
             
             return (
               <div key={role.id}>
-                <h3 className="text-xs font-bold text-muted uppercase tracking-wider mb-2">{role.name} — {roleMembers.length}</h3>
-                <div className="space-y-1">
+                <h3 className="text-[11px] font-bold text-muted uppercase tracking-wider mb-1 px-2">{role.name} — {roleMembers.length}</h3>
+                <div className="space-y-[2px]">
                   {roleMembers.map((m, i) => {
                     const activities = [
                       { type: 'Playing', name: 'Visual Studio Code', icon: '💻', details: 'Editing page.tsx', time: '45:12 elapsed' },
@@ -154,8 +154,12 @@ export function RightSidebar() {
           })}
 
           {filteredMembers.length === 0 && (
-            <div className="text-center text-muted text-sm mt-10">
-              No members found matching "{searchQuery}"
+            <div className="flex flex-col items-center justify-center h-full text-center px-4 mt-10">
+              <div className="w-16 h-16 rounded-full bg-tertiary flex items-center justify-center mb-4">
+                <Search size={24} className="text-muted opacity-50" />
+              </div>
+              <p className="text-sm font-bold text-foreground">No members found</p>
+              <p className="text-xs text-muted mt-1 text-center">We couldn't find anyone matching "{searchQuery}"</p>
             </div>
           )}
 
@@ -185,7 +189,7 @@ function MemberRow({ name, roleColor, status, subtext, activity, onClick }: { na
   };
 
   return (
-    <div onClick={onClick} className="flex flex-col p-2 rounded-lg hover:bg-tertiary cursor-pointer transition-colors group">
+    <div onClick={onClick} className="flex flex-col py-1.5 px-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors group">
       <div className="flex items-center gap-3">
         <div className="relative shrink-0">
           <div className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-white shadow-sm" style={{ backgroundColor: roleColor }}>
@@ -200,18 +204,18 @@ function MemberRow({ name, roleColor, status, subtext, activity, onClick }: { na
       </div>
       
       {activity && (
-        <div className="mt-3 bg-secondary/50 rounded-lg p-2.5 border border-white/5 ml-11">
-          <div className="text-[10px] font-bold uppercase tracking-wider text-muted mb-1 flex items-center gap-1">
+        <div className="mt-2 bg-black/20 rounded-md p-2 ml-11">
+          <div className="text-[9px] font-bold uppercase tracking-wider text-muted mb-1 flex items-center gap-1">
             <span>{activity.type}</span>
           </div>
           <div className="flex items-start gap-2">
-            <div className="w-8 h-8 bg-black/40 rounded-md flex items-center justify-center text-lg shrink-0">
+            <div className="w-7 h-7 bg-black/40 rounded flex items-center justify-center text-base shrink-0">
               {activity.icon}
             </div>
             <div className="flex flex-col min-w-0">
-              <span className="text-xs font-bold text-foreground truncate">{activity.name}</span>
-              <span className="text-[11px] text-muted truncate">{activity.details}</span>
-              <span className="text-[10px] text-muted truncate mt-0.5">{activity.time}</span>
+              <span className="text-[11px] font-bold text-foreground truncate">{activity.name}</span>
+              <span className="text-[10px] text-muted truncate">{activity.details}</span>
+              <span className="text-[9px] text-muted truncate mt-0.5">{activity.time}</span>
             </div>
           </div>
         </div>
