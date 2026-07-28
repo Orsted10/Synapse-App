@@ -55,9 +55,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   }, []);
 
   const scrollRef = React.useRef<HTMLDivElement>(null);
-  const { scrollY } = useScroll({ container: scrollRef });
-  const bannerY = useTransform(scrollY, [0, 200], [0, 100]);
-  const bannerOpacity = useTransform(scrollY, [0, 100], [1, 0]);
 
   const getAmbientColor = (id: string) => {
     if (!id) return 'transparent';
@@ -119,7 +116,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           setTimeout(() => ripple.remove(), 600);
         }}
       >
-        <div className="bg-noise absolute inset-0 pointer-events-none mix-blend-overlay opacity-40 z-50"></div>
+        <div className="bg-noise absolute inset-0 pointer-events-none opacity-[0.03] z-0"></div>
         <Toaster theme="system" position="bottom-right" richColors />
         
         {/* Workspace Sidebar (Floating Dock) */}
@@ -217,18 +214,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
               <span className="truncate">{workspaces.find(w => w.id === activeWorkspaceId)?.name}</span>
               <Settings size={16} className="text-muted group-hover:text-foreground transition-colors" />
             </div>
-            {/* Parallax Banner (Moved outside scroll container to prevent bleed) */}
-            <motion.div 
-              className="absolute top-14 left-0 w-full h-[120px] bg-cover bg-center pointer-events-none z-0"
-            >
-              <div 
-                className="absolute inset-0 opacity-20 mix-blend-overlay"
-                style={{ backgroundImage: `url(https://picsum.photos/seed/${activeWorkspaceId}/400/200)` }}
-              />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent to-background/90" />
-            </motion.div>
-
-            <div ref={scrollRef} className="flex-1 overflow-y-auto custom-scrollbar relative z-10 pt-[40px]">
+            <div className="flex-1 overflow-y-auto custom-scrollbar relative z-10 pt-[10px]">
               <div className="relative p-2">
                 <div className="sticky top-0 mb-2 px-2 py-1.5 flex items-center justify-between text-muted mt-2 glass-panel rounded-lg shadow-sm backdrop-blur-md border border-subtle/30 z-20">
                   <span className="text-[11px] font-bold uppercase tracking-wider">Text Channels</span>

@@ -146,19 +146,18 @@ export default function Home() {
   if (!activeWorkspaceId) {
     return (
       <AppLayout>
-        {/* Top Header - Dynamic Island */}
-        <div className="absolute top-4 left-1/2 -translate-x-1/2 h-14 border border-white/10 rounded-full flex items-center px-6 shrink-0 bg-background/80 backdrop-blur-md z-50 shadow-2xl transition-all duration-500 hover:w-[45%] w-[40%] min-w-[300px]">
+        {/* Top Header */}
+        <div className="h-14 border-b border-subtle flex items-center px-6 shrink-0 bg-background/80 backdrop-blur-md z-10 w-full">
           <div className="flex items-center gap-6 w-full justify-between">
             <div className="flex items-center gap-2 font-bold text-foreground">
               <Users size={20} className="text-muted" />
               <span>Friends</span>
             </div>
-            <div className="h-5 w-[1px] bg-subtle" />
             <div className="flex gap-4 text-sm font-medium">
-              <button className="text-foreground bg-secondary px-2 py-1 rounded-md">Online</button>
-              <button className="text-muted hover:text-foreground px-2 py-1 transition-colors">All</button>
-              <button className="text-muted hover:text-foreground px-2 py-1 transition-colors">Pending</button>
-              <button className="text-white bg-green-600 hover:bg-green-700 px-3 py-1 rounded-md transition-colors shadow-sm ml-2">Add Friend</button>
+              <button className="text-foreground bg-secondary px-3 py-1.5 rounded-md">Online</button>
+              <button className="text-muted hover:text-foreground px-3 py-1.5 transition-colors">All</button>
+              <button className="text-muted hover:text-foreground px-3 py-1.5 transition-colors">Pending</button>
+              <button className="text-white bg-green-600 hover:bg-green-700 px-4 py-1.5 rounded-md transition-colors shadow-sm ml-2">Add Friend</button>
             </div>
           </div>
         </div>
@@ -277,23 +276,26 @@ export default function Home() {
   return (
     <>
       <AppLayout>
-      {/* Top Header - Dynamic Island */}
-      <div className="absolute top-2 left-1/2 -translate-x-1/2 h-10 min-w-[320px] max-w-[500px] border border-white/10 rounded-full flex items-center justify-between px-4 shrink-0 glass-panel-heavy z-50 shadow-2xl transition-all duration-500 hover:w-[50%] w-[45%]">
+      {/* Main Container */}
+      <div className="flex-1 flex flex-col h-full overflow-hidden w-full relative">
+      
+      {/* Top Header */}
+      <div className="h-14 border-b border-subtle flex items-center justify-between px-6 shrink-0 bg-background/80 backdrop-blur-md z-20 w-full">
         <div className="flex items-center gap-2">
-          <Hash size={18} className="text-muted" />
+          <Hash size={20} className="text-muted" />
           <div className="flex items-center gap-2">
-            <span className="font-bold text-[15px] tracking-wide text-gradient-animated">
+            <span className="font-bold text-[16px] tracking-wide">
               {activeChannel ? <ScrambleText text={activeChannel.name} /> : 'Select a channel'}
             </span>
           </div>
         </div>
         {activeChannel && (
-          <div className="flex items-center gap-3 text-muted">
+          <div className="flex items-center gap-4 text-muted">
             <button className="hover:text-foreground transition-colors" title="Pinned Messages" onClick={() => setIsPinnedDrawerOpen(true)}>
-              <Pin size={16} />
+              <Pin size={20} />
             </button>
             <button className="hover:text-foreground transition-colors" title="Member List">
-              <Users size={16} />
+              <Users size={20} />
             </button>
           </div>
         )}
@@ -305,7 +307,7 @@ export default function Home() {
         <div className="flex-1 flex flex-row overflow-hidden w-full relative">
           <div className="flex-1 flex flex-col min-w-0 h-full">
           {/* Message Log Area */}
-          <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar flex flex-col gap-6 relative overscroll-contain chat-fade-mask pt-[80px]">
+          <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar flex flex-col gap-6 relative overscroll-contain chat-fade-mask">
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={activeChannel?.id}
@@ -530,14 +532,12 @@ export default function Home() {
                 <motion.div 
                   layout
                 animate={{
-                  boxShadow: isInputFocused ? "0 -10px 40px -10px rgba(var(--accent), 0.3)" : "0 -5px 20px -5px rgba(0,0,0,0.2)",
+                  boxShadow: isInputFocused ? "0 0 0 2px rgba(var(--accent), 0.5)" : "0 4px 6px -1px rgba(0,0,0,0.1)",
                   width: "100%"
                 }}
                 transition={{ type: "spring", stiffness: 400, damping: 30 }}
-                className={`flex items-center glass-panel-heavy rounded-t-[24px] rounded-b-none px-6 py-4 transition-all duration-500 overflow-hidden relative border-b-0 ${isInputFocused ? 'border-accent/80' : 'border-white/10'}`}
+                className={`flex items-center bg-secondary rounded-[12px] px-4 py-2.5 transition-all duration-300 overflow-hidden relative mb-4 border ${isInputFocused ? 'border-accent' : 'border-subtle'}`}
               >
-                {/* Background ambient glow inside input when focused */}
-                <div className={`absolute inset-0 bg-accent/5 transition-opacity duration-500 ${isInputFocused ? 'opacity-100' : 'opacity-0'} pointer-events-none`} />
                 
                 <button 
                   type="button" 
@@ -547,6 +547,7 @@ export default function Home() {
                   <Paperclip size={20} />
                 </button>
                 <textarea
+                  ref={inputRef}
                   value={inputValue}
                   onChange={handleInputChange}
                   onInput={(e) => {
@@ -607,6 +608,7 @@ export default function Home() {
           />
         </div>
       )}
+      </div>
       </AppLayout>
 
       <UserProfileModal isOpen={!!selectedUser} onClose={() => setSelectedUser(null)} user={selectedUser} />
