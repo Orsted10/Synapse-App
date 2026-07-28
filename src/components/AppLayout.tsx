@@ -16,6 +16,7 @@ import { useRouter } from "next/navigation";
 import { Toaster } from "sonner";
 import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { CustomCursor } from "./CustomCursor";
+import { Cursor } from "./Cursor";
 import { TiltCard } from "./TiltCard";
 import { Magnetic } from "./Magnetic";
 import { useHaptics } from "@/hooks/useHaptics";
@@ -38,6 +39,22 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isServerSettingsModalOpen, setIsServerSettingsModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
   const { playHover, playClick } = useHaptics();
+
+  const getAmbientColor = (id: string) => {
+    if (!id) return 'transparent';
+    const colors = [
+      'rgba(255,82,82,0.1)', 'rgba(255,64,129,0.1)', 'rgba(224,64,251,0.1)', 'rgba(124,77,255,0.1)', 
+      'rgba(83,109,254,0.1)', 'rgba(68,138,255,0.1)', 'rgba(64,196,255,0.1)', 'rgba(24,255,255,0.1)', 
+      'rgba(100,255,218,0.1)', 'rgba(105,240,174,0.1)'
+    ];
+    let hash = 0;
+    for (let i = 0; i < id.length; i++) {
+      hash = id.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
+
+  const ambientColor = activeWorkspaceId ? getAmbientColor(activeWorkspaceId) : 'transparent';
 
   useEffect(() => {
     initializeAuth();
@@ -64,9 +81,26 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <TooltipProvider delayDuration={200}>
-      <div className="h-screen w-screen bg-aurora text-foreground overflow-hidden flex transition-colors duration-500 relative">
+      <>
+      <Cursor />
+      <div 
+        className="h-screen w-screen bg-aurora text-foreground overflow-hidden flex transition-all duration-1000 relative"
+        style={{
+          boxShadow: `inset 0 0 150px ${ambientColor}`
+        }}
+        onClick={(e) => {
+          const ripple = document.createElement("div");
+          ripple.className = "absolute rounded-full border border-white/20 pointer-events-none mix-blend-overlay";
+          ripple.style.width = "100px";
+          ripple.style.height = "100px";
+          ripple.style.left = `${e.clientX - 50}px`;
+          ripple.style.top = `${e.clientY - 50}px`;
+          ripple.style.animation = "ripple 0.6s ease-out forwards";
+          e.currentTarget.appendChild(ripple);
+          setTimeout(() => ripple.remove(), 600);
+        }}
+      >
         <div className="bg-noise absolute inset-0 pointer-events-none mix-blend-overlay opacity-40 z-50"></div>
-        <CustomCursor />
         <Toaster theme="system" position="bottom-right" richColors />
         
         {/* Workspace Sidebar (Floating Dock) */}
@@ -319,6 +353,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       )}
 
       </div>
+      </>
     </TooltipProvider>
   );
 }

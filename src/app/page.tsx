@@ -284,7 +284,7 @@ export default function Home() {
       ) : (
         <>
           {/* Message Log Area */}
-          <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar flex flex-col gap-6 relative">
+          <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar flex flex-col gap-6 relative overscroll-contain">
             <AnimatePresence mode="popLayout">
               <motion.div
                 key={activeChannel?.id}

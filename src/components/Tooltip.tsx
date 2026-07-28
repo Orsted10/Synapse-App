@@ -24,11 +24,11 @@ export function Tooltip({ content, children, side = 'top', align = 'center' }: T
           asChild
         >
           <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: side === 'top' ? 5 : side === 'bottom' ? -5 : 0, x: side === 'left' ? 5 : side === 'right' ? -5 : 0 }}
-            animate={{ opacity: 1, scale: 1, y: 0, x: 0 }}
-            exit={{ opacity: 0, scale: 0.9 }}
-            transition={{ type: 'spring', damping: 20, stiffness: 300 }}
-            className="px-3 py-1.5 bg-foreground text-background text-sm font-bold rounded-md shadow-xl max-w-[200px] text-center"
+            initial={{ opacity: 0, scaleX: 0.3, scaleY: 0.1, y: side === 'top' ? 20 : side === 'bottom' ? -20 : 0, x: side === 'left' ? 20 : side === 'right' ? -20 : 0 }}
+            animate={{ opacity: 1, scaleX: 1, scaleY: 1, y: 0, x: 0 }}
+            exit={{ opacity: 0, scaleX: 0.8, scaleY: 0.5 }}
+            transition={{ type: 'spring', damping: 15, stiffness: 400, mass: 0.5 }}
+            className="px-4 py-2 bg-foreground text-background text-[13px] font-bold rounded-xl shadow-[0_20px_40px_-10px_rgba(0,0,0,0.5)] max-w-[200px] text-center border border-white/20"
           >
             {content}
             <TooltipPrimitive.Arrow className="fill-foreground" width={11} height={5} />
