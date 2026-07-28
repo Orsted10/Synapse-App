@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect, useRef } from "react";
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import AppLayout from "@/components/AppLayout";
 import { Hash, Send, Smile, Paperclip, Users, MessageSquare, Volume2, Pin } from "lucide-react";
 import { useMessageStore } from "@/store/messageStore";
@@ -15,6 +15,7 @@ import { TiltCard } from "@/components/TiltCard";
 import { SpotlightCard } from "@/components/SpotlightCard";
 import { Magnetic } from "@/components/Magnetic";
 import { ScrambleText } from "@/components/ScrambleText";
+import { StaggerText } from "@/components/StaggerText";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from "@/lib/supabase";
@@ -139,6 +140,21 @@ export default function Home() {
   // ---------------------------------------------
   // CHAT SCREEN (Workspace & Channel Selected)
   // ---------------------------------------------
+  
+  const getColorForUser = (username: string) => {
+    if (!username) return 'rgba(var(--accent), 1)';
+    const colors = [
+      '#FF5252', '#FF4081', '#E040FB', '#7C4DFF', 
+      '#536DFE', '#448AFF', '#40C4FF', '#18FFFF', 
+      '#64FFDA', '#69F0AE', '#B2FF59', '#EEFF41', 
+      '#FFFF00', '#FFD740', '#FFAB40', '#FF6E40'
+    ];
+    let hash = 0;
+    for (let i = 0; i < username.length; i++) {
+      hash = username.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+  };
 
   // ... (inside the component)
   const handleUserClick = (userProfile: any) => {
@@ -242,11 +258,21 @@ export default function Home() {
 
       {activeChannel?.type === 'voice' ? (
         <div className="flex-1 flex flex-col items-center justify-center bg-secondary/30">
-          <div className="bg-tertiary p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-md w-full border border-subtle">
-            <div className="w-24 h-24 bg-accent/20 text-accent rounded-full flex items-center justify-center mb-6 shadow-[0_0_40px_rgba(var(--accent),0.3)]">
-              <Volume2 size={48} />
+          <div className="bg-tertiary p-8 rounded-2xl shadow-xl flex flex-col items-center max-w-md w-full border border-subtle relative overflow-hidden">
+            <div className="absolute inset-0 bg-noise mix-blend-overlay opacity-30 pointer-events-none" />
+            <div className="w-24 h-24 bg-accent/10 rounded-full flex items-end justify-center mb-6 shadow-[0_0_50px_rgba(var(--accent),0.2)] overflow-hidden gap-1 pb-4 relative z-10">
+              {[...Array(5)].map((_, i) => (
+                <motion.div 
+                  key={i} 
+                  animate={{ height: [20, 60, 30, 70, 20] }} 
+                  transition={{ repeat: Infinity, duration: 1 + i * 0.2, ease: "easeInOut" }}
+                  className="w-2 bg-accent rounded-full" 
+                />
+              ))}
             </div>
-            <h2 className="text-2xl font-bold mb-2 text-foreground">#{activeChannel.name}</h2>
+            <h2 className="text-2xl font-bold mb-2 text-foreground relative z-10">
+              <ScrambleText text={`# ${activeChannel.name}`} />
+            </h2>
             <p className="text-muted text-center mb-8">
               Voice channels are currently in development. You will be able to connect and talk with your friends here soon!
             </p>
@@ -258,8 +284,20 @@ export default function Home() {
       ) : (
         <>
           {/* Message Log Area */}
-          <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar flex flex-col gap-6">
-            {messages.map((msg, index) => (
+          <div className="flex-1 overflow-y-auto px-6 py-6 custom-scrollbar flex flex-col gap-6 relative">
+            <AnimatePresence mode="popLayout">
+              <motion.div
+                key={activeChannel?.id}
+                initial={{ opacity: 0, rotateX: 20, z: -100 }}
+                animate={{ opacity: 1, rotateX: 0, z: 0 }}
+                exit={{ opacity: 0, rotateX: -20, z: -100 }}
+                transition={{ type: "spring", stiffness: 200, damping: 25 }}
+                className="flex flex-col gap-6"
+                style={{ transformStyle: "preserve-3d", perspective: 1000 }}
+              >
+            {messages.map((msg, index) => {
+              const userColor = getColorForUser(msg.user?.username || '');
+              return (
               <motion.div 
                 layout
                 initial={{ opacity: 0, y: 50, scale: 0.95 }}
@@ -280,23 +318,26 @@ export default function Home() {
                   {/* Avatar */}
                   <div 
                     onClick={() => handleUserClick(msg.user)}
-                    className={`w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-bold text-white shadow-sm cursor-pointer hover:opacity-80 transition-opacity mt-1 ${
-                      msg.user?.role === 'Creator' ? 'bg-accent' : 'bg-tertiary text-foreground'
-                    }`}
+                    className="w-10 h-10 rounded-full shrink-0 flex items-center justify-center font-bold text-white shadow-sm cursor-pointer hover:scale-110 transition-transform mt-1 z-10 relative"
+                    style={{
+                      backgroundColor: userColor,
+                      boxShadow: `0 0 20px ${userColor}60, inset 0 0 10px rgba(255,255,255,0.2)`
+                    }}
                   >
                     {msg.user?.username ? msg.user.username.substring(0, 1).toUpperCase() : '?'}
                   </div>
 
-                  <div className="flex flex-col w-full max-w-[85%]">
+                  <div className="flex flex-col w-full max-w-[85%] z-10">
                   {/* Message Header */}
                   <div className="flex items-center gap-2 mb-1">
                     <span 
                       onClick={() => handleUserClick(msg.user)}
-                      className="font-bold text-[15px] hover:underline cursor-pointer"
+                      className="font-bold text-[15px] hover:underline cursor-pointer tracking-wide"
+                      style={{ color: userColor }}
                     >
-                      {msg.user?.username || 'Unknown User'}
+                      <StaggerText text={msg.user?.username || 'Unknown User'} />
                     </span>
-                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent font-semibold tracking-wide">
+                    <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-accent/10 text-accent font-semibold tracking-wide border border-accent/20">
                       {msg.user?.role || 'Member'}
                     </span>
                     <span className="text-xs text-muted ml-1">
@@ -395,7 +436,9 @@ export default function Home() {
                   </SpotlightCard>
                 </TiltCard>
               </motion.div>
-            ))}
+            )})}
+              </motion.div>
+            </AnimatePresence>
             {messages.length === 0 && activeChannelId && (
               <div className="m-auto text-muted flex flex-col items-center justify-center h-full">
                 <Hash size={48} className="mb-4 opacity-50" />
@@ -426,14 +469,20 @@ export default function Home() {
                 accept="image/*"
               />
               <motion.div 
+                layout
                 animate={{
-                  y: isInputFocused ? -10 : 0,
-                  scale: isInputFocused ? 1.02 : 1,
-                  boxShadow: isInputFocused ? "0 25px 50px -12px rgba(var(--accent), 0.5)" : "0 10px 40px -10px rgba(0,0,0,0.3)"
+                  y: isInputFocused ? -20 : 0,
+                  scale: isInputFocused ? 1.05 : 1,
+                  boxShadow: isInputFocused ? "0 40px 80px -20px rgba(var(--accent), 0.6)" : "0 10px 40px -10px rgba(0,0,0,0.3)",
+                  width: isInputFocused ? "100%" : "85%",
+                  margin: "0 auto"
                 }}
-                transition={{ type: "spring", stiffness: 300, damping: 25 }}
-                className={`flex items-center glass-panel-heavy rounded-[32px] px-6 py-4 transition-colors duration-500 ${isInputFocused ? 'border-accent/50' : 'border-white/10'}`}
+                transition={{ type: "spring", stiffness: 400, damping: 30 }}
+                className={`flex items-center glass-panel-heavy rounded-[32px] px-6 py-4 transition-all duration-500 overflow-hidden relative ${isInputFocused ? 'border-accent/80' : 'border-white/10'}`}
               >
+                {/* Background ambient glow inside input when focused */}
+                <div className={`absolute inset-0 bg-accent/5 transition-opacity duration-500 ${isInputFocused ? 'opacity-100' : 'opacity-0'} pointer-events-none`} />
+                
                 <button 
                   type="button" 
                   onClick={() => fileInputRef.current?.click()}
