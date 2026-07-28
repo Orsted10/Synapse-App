@@ -412,7 +412,7 @@ export default function Home() {
                                 <img 
                                   className="max-w-full max-h-[300px] rounded-xl my-2 object-contain bg-black/10 cursor-pointer hover:opacity-90 transition-opacity" 
                                   loading="lazy" 
-                                  onClick={() => setGalleryImage(props.src || null)}
+                                  onClick={() => setGalleryImage(typeof props.src === 'string' ? props.src : null)}
                                   {...props} 
                                 />
                               ),
