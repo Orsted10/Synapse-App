@@ -18,6 +18,7 @@ import { TooltipProvider } from "@radix-ui/react-tooltip";
 import { CustomCursor } from "./CustomCursor";
 import { TiltCard } from "./TiltCard";
 import { Magnetic } from "./Magnetic";
+import { useHaptics } from "@/hooks/useHaptics";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
@@ -36,6 +37,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
   const [isSettingsModalOpen, setIsSettingsModalOpen] = useState(false);
   const [isServerSettingsModalOpen, setIsServerSettingsModalOpen] = useState(false);
   const [isCreateChannelModalOpen, setIsCreateChannelModalOpen] = useState(false);
+  const { playHover, playClick } = useHaptics();
 
   useEffect(() => {
     initializeAuth();
@@ -67,13 +69,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <CustomCursor />
         <Toaster theme="system" position="bottom-right" richColors />
         
-        {/* Workspace Sidebar (Far Left) */}
-      <div className="w-[72px] h-full glass-panel-heavy border-r border-subtle/50 flex flex-col items-center py-4 gap-3 z-20 shrink-0">
+        {/* Workspace Sidebar (Floating Dock) */}
+      <div className="w-[72px] h-[calc(100vh-32px)] my-auto ml-4 mr-2 rounded-[24px] glass-panel-heavy border border-subtle/50 flex flex-col items-center py-4 gap-3 z-20 shrink-0 shadow-2xl">
         {/* Home Button */}
         <Tooltip content="Direct Messages" side="right">
           <Magnetic>
           <TiltCard
-            onClick={() => setActiveWorkspace(null)}
+            onMouseEnter={playHover}
+            onClick={() => { playClick(); setActiveWorkspace(null); }}
             className={`w-12 h-12 flex items-center justify-center transition-all duration-300 group relative ${
               !activeWorkspaceId 
                 ? "bg-accent text-white rounded-[12px] shadow-[0_0_20px_rgba(var(--accent),0.5)]" 
@@ -101,7 +104,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           <Tooltip key={ws.id} content={ws.name} side="right">
             <Magnetic>
             <TiltCard
-              onClick={() => setActiveWorkspace(ws.id)}
+              onMouseEnter={playHover}
+              onClick={() => { playClick(); setActiveWorkspace(ws.id); }}
               className={`w-12 h-12 flex items-center justify-center font-bold text-sm transition-all duration-300 premium-shadow group relative ${
                 activeWorkspaceId === ws.id 
                   ? "bg-accent text-white rounded-[12px] shadow-[0_0_20px_rgba(var(--accent),0.5)]" 
@@ -130,7 +134,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         <Tooltip content="Add a Server" side="right">
           <Magnetic pullFactor={0.5}>
           <button 
-            onClick={() => setIsCreateModalOpen(true)}
+            onMouseEnter={playHover}
+            onClick={() => { playClick(); setIsCreateModalOpen(true); }}
             className="w-12 h-12 rounded-[16px] bg-secondary/50 text-green-500 hover:bg-green-500 hover:text-white flex items-center justify-center transition-all duration-300 group relative glowing-border"
           >
             <Plus size={24} />
@@ -150,7 +155,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         
         {/* Inner Sidebar (Channels) - Only show if in a workspace */}
         {activeWorkspaceId && (
-          <div className="w-[240px] glass-panel border-r border-subtle/50 flex flex-col shrink-0 relative z-10">
+          <div className="w-[240px] h-[calc(100vh-32px)] my-auto mr-4 rounded-[24px] glass-panel border border-subtle/50 flex flex-col shrink-0 relative z-10 overflow-hidden shadow-2xl">
             {/* Workspace Header */}
             <div 
               onClick={() => setIsServerSettingsModalOpen(true)}
@@ -227,7 +232,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
 
         {!activeWorkspaceId && (
           // Home Sidebar
-          <div className="w-[240px] bg-secondary border-r border-subtle flex flex-col shrink-0 relative">
+          <div className="w-[240px] h-[calc(100vh-32px)] my-auto mr-4 rounded-[24px] glass-panel border border-subtle/50 flex flex-col shrink-0 relative z-10 overflow-hidden shadow-2xl">
             <div className="h-14 border-b border-subtle flex items-center px-4 z-10 shrink-0">
               <button className="w-full bg-tertiary text-muted hover:bg-tertiary hover:text-foreground text-sm font-medium px-3 py-1.5 rounded-md text-left transition-colors border border-subtle shadow-inner">
                 Find or start a conversation

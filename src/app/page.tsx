@@ -14,6 +14,7 @@ import { MessageContextMenu } from "@/components/MessageContextMenu";
 import { TiltCard } from "@/components/TiltCard";
 import { SpotlightCard } from "@/components/SpotlightCard";
 import { Magnetic } from "@/components/Magnetic";
+import { ScrambleText } from "@/components/ScrambleText";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import { supabase } from "@/lib/supabase";
@@ -107,9 +108,9 @@ export default function Home() {
   if (!activeWorkspaceId) {
     return (
       <AppLayout>
-        {/* Top Header */}
-        <div className="h-14 border-b border-subtle flex items-center px-6 shrink-0 bg-background/80 backdrop-blur-md z-10 sticky top-0 shadow-sm">
-          <div className="flex items-center gap-6">
+        {/* Top Header - Dynamic Island */}
+        <div className="absolute top-4 left-1/2 -translate-x-1/2 h-14 border border-white/10 rounded-full flex items-center px-6 shrink-0 bg-background/80 backdrop-blur-md z-50 shadow-2xl transition-all duration-500 hover:w-[45%] w-[40%] min-w-[300px]">
+          <div className="flex items-center gap-6 w-full justify-between">
             <div className="flex items-center gap-2 font-bold text-foreground">
               <Users size={20} className="text-muted" />
               <span>Friends</span>
@@ -217,12 +218,14 @@ export default function Home() {
   return (
     <>
       <AppLayout>
-      {/* Top Header */}
-      <div className="h-14 border-b border-white/5 flex items-center justify-between px-6 shrink-0 glass-panel-heavy z-10 sticky top-0">
+      {/* Top Header - Dynamic Island */}
+      <div className="absolute top-4 left-1/2 -translate-x-1/2 h-14 border border-white/10 rounded-full flex items-center justify-between px-6 shrink-0 glass-panel-heavy z-50 shadow-2xl transition-all duration-500 hover:w-[55%] w-[50%] min-w-[400px]">
         <div className="flex items-center gap-3">
           <Hash size={22} className="text-muted" />
           <div className="flex items-center gap-3">
-            <span className="font-bold text-[18px] tracking-wide text-gradient-animated">{activeChannel ? activeChannel.name : 'Select a channel'}</span>
+            <span className="font-bold text-[18px] tracking-wide text-gradient-animated">
+              {activeChannel ? <ScrambleText text={activeChannel.name} /> : 'Select a channel'}
+            </span>
           </div>
         </div>
         {activeChannel && (

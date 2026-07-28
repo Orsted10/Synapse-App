@@ -7,9 +7,11 @@ interface TiltCardProps {
   children: React.ReactNode;
   className?: string;
   onClick?: () => void;
+  onMouseEnter?: () => void;
+  onMouseLeave?: () => void;
 }
 
-export const TiltCard = ({ children, className = "", onClick }: TiltCardProps) => {
+export const TiltCard = ({ children, className = "", onClick, onMouseEnter, onMouseLeave }: TiltCardProps) => {
   const ref = useRef<HTMLDivElement>(null);
   
   const x = useMotionValue(0);
@@ -50,8 +52,14 @@ export const TiltCard = ({ children, className = "", onClick }: TiltCardProps) =
     <motion.div
       ref={ref}
       onMouseMove={handleMouseMove}
-      onMouseEnter={() => setIsHovering(true)}
-      onMouseLeave={handleMouseLeave}
+      onMouseEnter={() => {
+        setIsHovering(true);
+        if (onMouseEnter) onMouseEnter();
+      }}
+      onMouseLeave={() => {
+        handleMouseLeave();
+        if (onMouseLeave) onMouseLeave();
+      }}
       onClick={onClick}
       style={{
         rotateX,
